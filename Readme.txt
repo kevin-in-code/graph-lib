@@ -3,7 +3,7 @@ GraphLib
 
 This repository provides code that may be run to verify published experimental results.
 
-Currenlt only one executable program is included: Main_TCS_2015.
+Currently only one executable program is included: Main_TCS_2015.
 
 
 How to build with Visual Studio 2015
