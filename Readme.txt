@@ -1,3 +1,11 @@
+GraphLib
+--------
+
+This repository provides code that may be run to verify published experimental results.
+
+Currenlt only one executable program is included: Main_TCS_2015.
+
+
 How to build with Visual Studio 2015
 ------------------------------------
 
@@ -13,8 +21,9 @@ How to build with Visual Studio 2015
 How to build with GCC
 ---------------------
 
-A Makefile is not currently included, but is easy to construct.
-Simply compile each .cpp file in the src directory, as well as
-those in the tests/* directories.  Link accordingly.
+1. make
 
-I haven't tested extensively under Linux or BSD.
+This should compile without any gcc/g++ errors.  Note, however, that limited testing has
+been done under Linux.  In particular, I am not certain about the accuracy of the timing
+that is available.
+

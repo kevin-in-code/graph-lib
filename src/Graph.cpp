@@ -87,9 +87,9 @@ namespace kn
 
 	/// Move constructor
 	Graph::Graph(Graph&& other) :
-		vertices(),
 		vertexAttributes(nullptr),
 		edgeAttributes(nullptr),
+		vertices(),
 		vertexIDtoIndex(),
 		edgeIDtoSourceID(),
 		nextVertexID(1),
@@ -241,7 +241,13 @@ namespace kn
 	bool Graph::getEdge(EdgeID id, Edge& e) const
 	{
 		auto it = edgeIDtoSourceID.find(id);
-		if (it == edgeIDtoSourceID.end()) return false;
+		if (it == edgeIDtoSourceID.end())
+		{
+			// These lines prevents a spurious compiler warning.
+			e.id = e.u = e.v = e.attrID = 0;
+			e.undirected = true;
+			return false;
+		}
 
 		size_t sourceID = it->second;
 		const VertexInfo* u = &vertices[vertexIDtoIndex.at(sourceID)];

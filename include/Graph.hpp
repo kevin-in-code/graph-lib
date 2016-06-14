@@ -164,7 +164,7 @@ namespace kn
 
 		VertexID getVertexID(size_t index) const
 		{
-			if ((index >= 0) && (index < vertices.size()))
+			if (index < vertices.size())
 			{
 				return vertices[index].id;
 			}
@@ -176,7 +176,12 @@ namespace kn
 
 		bool getVertex(VertexID id, Vertex& v) const
 		{
-			if (!validVertexID(id)) return false;
+			if (!validVertexID(id))
+			{
+				// This line prevents a spurious compiler warning.
+				v.id = v.outDegree = v.inDegree = v.attrID = 0;
+				return false;
+			}
 
 			v = vertices[vertexIDtoIndex.at(id)];
 			return true;
@@ -466,12 +471,12 @@ namespace kn
 					return false;
 			}
 
-			EdgeIterator& exitingEdges() const
+			EdgeIterator exitingEdges() const
 			{
 				return graph->exitingEdgeIterator(position);
 			}
 
-			EdgeIterator& enteringEdges() const
+			EdgeIterator enteringEdges() const
 			{
 				return graph->enteringEdgeIterator(position);
 			}

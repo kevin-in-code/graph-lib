@@ -156,7 +156,6 @@ namespace kn
 		{
 			if (!P->isEmpty())
 			{
-				size_t maximum = P->count() + 1;
 				size_t most = 0;
 				size_t q = 0;
 

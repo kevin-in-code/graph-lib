@@ -10,8 +10,8 @@
 
 #include <iostream>
 #include <string>
+#include <algorithm>
 #include <BitStructures.hpp>
-//#include <AttributeModel.hpp>
 #include <Graph.hpp>
 #include <CliqueEnumeration.hpp>
 #include <SmallFunctions.hpp>
@@ -37,7 +37,7 @@ typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t maxCount, bool diffuseError)
 {
 	uint32_t count = (d >= 65) ? 30 : (d >= 35) ? 100 : 500;
-	if (maxCount > 0) count = min(count, maxCount);
+	if (maxCount > 0) count = (std::min)(count, maxCount);
 
 	double goalDensity = d / 100.0;
 	double error = 0.0;

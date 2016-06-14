@@ -47,4 +47,4 @@ namespace kn
         static const T value = 1 + ConstSqrt<T, std::numeric_limits<T>::max()>::value;
     };
 
-};
+}

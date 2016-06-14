@@ -53,10 +53,10 @@ project "Main_TCS_2015"
    flags { "EnableSSE", "EnableSSE2" }
 
    files {
-      "tests/%{prj.name}/**.hpp",
-      "tests/%{prj.name}/**.h",
-      "tests/%{prj.name}/**.cpp",
-      "tests/%{prj.name}/**.c"
+      "programs/%{prj.name}/**.hpp",
+      "programs/%{prj.name}/**.h",
+      "programs/%{prj.name}/**.cpp",
+      "programs/%{prj.name}/**.c"
    }
    includedirs {
       "include"

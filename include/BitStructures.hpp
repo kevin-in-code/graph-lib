@@ -131,9 +131,9 @@ namespace kn
 		};
 
 	private:
-		uint64_t* array;
-		size_t arraySize;
 		size_t maxCardinality;
+		size_t arraySize;
+		uint64_t* array;
 
 		bool verifyIsEmpty() const;
 
@@ -163,7 +163,7 @@ namespace kn
 
         void add(size_t value)
         {
-            assert((0 <= value) && (value < maxCardinality));
+            assert(value < maxCardinality);
 
             size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
@@ -172,7 +172,7 @@ namespace kn
 
         void remove(size_t value)
         {
-            assert((0 <= value) && (value < maxCardinality));
+			assert(value < maxCardinality);
 
             size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);

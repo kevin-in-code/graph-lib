@@ -57,7 +57,7 @@ namespace kn
 		const int      MT_LCG_D = 30;
 
 	private:
-		int next;
+		size_t next;
 		uint32_t x[MT_N];
 
 	public:
