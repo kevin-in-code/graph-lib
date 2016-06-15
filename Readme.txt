@@ -3,8 +3,13 @@ GraphLib
 
 This repository provides code that may be run to verify published experimental results.
 
-Currently only one executable program is included: Main_TCS_2015.
+Executable programs included:
+    Main_TCS_2015
+    CountMaximalCliques
 
+CountMaximalCliques can apply clique enumeration to a graph loaded from a file.
+The graph file must contain the adjacency matrix in CSV format.  An example is
+provided in programs/CountMaximalCliques/graph.csv.
 
 How to build with Visual Studio 2015
 ------------------------------------
