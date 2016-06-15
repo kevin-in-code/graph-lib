@@ -5,6 +5,7 @@ AR=ar
 all: ./bin/Main_TCS_2015 ./bin/CountMaximalCliques
 
 ./bin/Main_TCS_2015: ./build/Main_TCS_2015.o ./lib/graphlib.a
+	mkdir -p ./bin
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 ./build/Main_TCS_2015.o: ./programs/Main_TCS_2015/main.cpp ./build
@@ -13,6 +14,7 @@ all: ./bin/Main_TCS_2015 ./bin/CountMaximalCliques
 
 
 ./bin/CountMaximalCliques: ./build/CountMaximalCliques.o ./lib/graphlib.a
+	mkdir -p ./bin
 	$(CXX) $(CXXFLAGS) $^ -o $@
 
 ./build/CountMaximalCliques.o: ./programs/CountMaximalCliques/main.cpp ./build
@@ -20,7 +22,7 @@ all: ./bin/Main_TCS_2015 ./bin/CountMaximalCliques
 
 
 
-./lib/graphlib.a: ./build/MersenneTwister.o ./build/BitStructures.o ./build/Graph.o ./build/Graph_ErdosRenyi.o ./build/CliqueEnumeration.o
+./lib/graphlib.a: ./build/MersenneTwister.o ./build/BitStructures.o ./build/Graph.o ./build/GraphLoader.o ./build/Graph_ErdosRenyi.o ./build/CliqueEnumeration.o
 	mkdir -p ./lib
 	$(AR) rvs ./lib/graphlib.a $^
 
@@ -31,6 +33,9 @@ all: ./bin/Main_TCS_2015 ./bin/CountMaximalCliques
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 ./build/Graph.o: ./src/Graph.cpp ./build
+	$(CXX) $(CXXFLAGS) -c $< -o $@
+
+./build/GraphLoader.o: ./src/GraphLoader.cpp ./build
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 ./build/Graph_ErdosRenyi.o: ./src/Graph_ErdosRenyi.cpp ./build
