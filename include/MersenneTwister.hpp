@@ -10,6 +10,7 @@
  */
 
 #include <cstdint>
+#include <cstdlib>
 #include <math.h>
 #include <Random.hpp>
 
@@ -38,8 +39,8 @@ namespace kn
 	class MersenneTwister : public Random
 	{
 	private:
-		static const size_t MT_N = 624;
-		const size_t MT_M = 397;
+		static const std::size_t MT_N = 624;
+		const std::size_t MT_M = 397;
 
 		const int MT_U = 11;
 		const int MT_S = 7;
@@ -57,7 +58,7 @@ namespace kn
 		const int      MT_LCG_D = 30;
 
 	private:
-		size_t next;
+		std::size_t next;
 		uint32_t x[MT_N];
 
 	public:

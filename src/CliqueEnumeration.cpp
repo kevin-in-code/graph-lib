@@ -1,4 +1,5 @@
 
+#include <cstdlib>
 #include <CliqueEnumeration.hpp>
 #include <BitStructures.hpp>
 
@@ -14,7 +15,7 @@ namespace kn
 		IntegerSet* next;
 
 	public:
-		size_t numVertices;
+		std::size_t numVertices;
 		std::vector<IntegerSet> N;
 		std::vector<IntegerSet> K;
 
@@ -27,11 +28,11 @@ namespace kn
 			this->receiver = receiver;
 
 			numVertices = graph->countVertices();
-			for (size_t ui = 0; ui < numVertices; ui++)
+			for (std::size_t ui = 0; ui < numVertices; ui++)
 			{
 				Graph::VertexID u = graph->getVertexID(ui);
 				IntegerSet neighbours(numVertices);
-				for (size_t vi = 0; vi < numVertices; vi++)
+				for (std::size_t vi = 0; vi < numVertices; vi++)
 				{
 					if (ui == vi) continue;
 					Graph::VertexID v = graph->getVertexID(vi);
@@ -49,7 +50,7 @@ namespace kn
 			}
 
 			this->pool = new IntegerSet[4 * (1+numVertices)];
-			for (size_t i = 0; i < 4 * (1+numVertices); i++)
+			for (std::size_t i = 0; i < 4 * (1+numVertices); i++)
 			{
 				this->pool[i].setMaxCardinality(numVertices);
 			}
@@ -87,7 +88,7 @@ namespace kn
 			return r;
 		}
 
-		IntegerSet* insert(IntegerSet* a, size_t value)
+		IntegerSet* insert(IntegerSet* a, std::size_t value)
 		{
 			IntegerSet* r = reserveSet();
 			r->copy(*a);
@@ -112,7 +113,7 @@ namespace kn
 				auto it = Q->iterator();
 				while (it.hasNext())
 				{
-					size_t v = it.next();
+					std::size_t v = it.next();
 					P->remove(v);
 
 					IntegerSet* s2 = this->insert(S, v);
@@ -156,14 +157,14 @@ namespace kn
 		{
 			if (!P->isEmpty())
 			{
-				size_t most = 0;
-				size_t q = 0;
+				std::size_t most = 0;
+				std::size_t q = 0;
 
 				auto it = X->iterator();
 				while (it.hasNext())
 				{
-					size_t v = it.next();
-					size_t count = P->countCommon(N[v]) + 1;
+					std::size_t v = it.next();
+					std::size_t count = P->countCommon(N[v]) + 1;
 					if (count > most)
 					{
 						most = count;
@@ -174,8 +175,8 @@ namespace kn
 				auto it2 = P->iterator();
 				while (it2.hasNext())
 				{
-					size_t v = it2.next();
-					size_t count = P->countCommon(N[v]) + 1;
+					std::size_t v = it2.next();
+					std::size_t count = P->countCommon(N[v]) + 1;
 					if (count > most)
 					{
 						most = count;
@@ -203,17 +204,17 @@ namespace kn
 		virtual IntegerSet* pivotConflict(IntegerSet* S, IntegerSet* P, IntegerSet* X)
 		{
 		search:
-			size_t q = numVertices; // an initial value which is not a valid vertex
-			size_t least = numVertices + 1; // not infinity, but large enough
+			std::size_t q = numVertices; // an initial value which is not a valid vertex
+			std::size_t least = numVertices + 1; // not infinity, but large enough
 
 			if (!X->isEmpty())
 			{
 				auto it = X->iterator();
 				while (it.hasNext())
 				{
-					size_t v = it.next();
-					size_t w = 0;
-					size_t count = P->countCommonLimit(K[v], least, w);
+					std::size_t v = it.next();
+					std::size_t w = 0;
+					std::size_t count = P->countCommonLimit(K[v], least, w);
 					if (count < least)
 					{
 						if (count <= 2)
@@ -252,9 +253,9 @@ namespace kn
 				auto it = P->iterator();
 				while (it.hasNext())
 				{
-					size_t v = it.next();
-					size_t w = 0;
-					size_t count = P->countCommonLimit(K[v], least, w);
+					std::size_t v = it.next();
+					std::size_t w = 0;
+					std::size_t count = P->countCommonLimit(K[v], least, w);
 					if (count < least)
 					{
 						if (count <= 2)

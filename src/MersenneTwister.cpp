@@ -11,7 +11,7 @@ namespace kn
 	{
 		uint32_t y = seed & MT_BITS;
 		x[0] = y;
-		for (size_t i = 1; i < MT_N; i++)
+		for (std::size_t i = 1; i < MT_N; i++)
 		{
 			y = x[i] = (MT_LCG_M * (y ^ (y >> MT_LCG_D)) + i) & MT_BITS;
 		}
@@ -25,7 +25,7 @@ namespace kn
 	MersenneTwister::MersenneTwister(Random& seed)
 		: Random()
 	{
-		for (size_t i = 0; i < MT_N; i++)
+		for (std::size_t i = 0; i < MT_N; i++)
 		{
 			x[i] = seed.nextBits() ^ seed.nextBits() ^ seed.nextBits();
 		}
@@ -35,12 +35,12 @@ namespace kn
 	void MersenneTwister::flush()
 	{
 		uint32_t y;
-		for (size_t k = 0; k < (MT_N - MT_M); k++)
+		for (std::size_t k = 0; k < (MT_N - MT_M); k++)
 		{
 			y = (x[k] & MT_X) | (x[k + 1] & MT_Y);
 			x[k] = x[k + MT_M] ^ MT_MAYBE_A(y);
 		}
-		for (size_t k = MT_N - MT_M; k < MT_N - 1; k++)
+		for (std::size_t k = MT_N - MT_M; k < MT_N - 1; k++)
 		{
 			y = (x[k] & MT_X) | (x[k + 1] & MT_Y);
 			x[k] = x[k - (MT_N - MT_M)] ^ MT_MAYBE_A(y);

@@ -45,7 +45,7 @@ namespace kn
 
 	bool IntegerSet::verifyIsEmpty() const
 	{
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			if (array[index] != 0) return false;
 		}
@@ -61,7 +61,7 @@ namespace kn
 		array[0] = 0;
 	}
 
-	IntegerSet::IntegerSet(size_t maxCardinality)
+	IntegerSet::IntegerSet(std::size_t maxCardinality)
 	{
 		this->maxCardinality = maxCardinality;
 		arraySize = (maxCardinality + 63) / 64;
@@ -133,14 +133,14 @@ namespace kn
 		return *this;
 	}
 
-	void IntegerSet::setMaxCardinality(size_t maxCardinality)
+	void IntegerSet::setMaxCardinality(std::size_t maxCardinality)
 	{
-		size_t arraySize = (maxCardinality + 63) / 64;
+		std::size_t arraySize = (maxCardinality + 63) / 64;
 		if (this->arraySize != arraySize)
 		{
 			uint64_t* newArray = new uint64_t[arraySize];
 			assert(newArray);
-			for (size_t index = 0; index < arraySize; index++)
+			for (std::size_t index = 0; index < arraySize; index++)
 			{
 				newArray[index] = array[index];
 			}
@@ -154,7 +154,7 @@ namespace kn
 
 	void IntegerSet::clear()
 	{
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] = 0;
 		}
@@ -162,7 +162,7 @@ namespace kn
 
 	void IntegerSet::fill()
 	{
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] = ~0;
 		}
@@ -173,27 +173,27 @@ namespace kn
 	void IntegerSet::copy(const IntegerSet& b)
 	{
 		assert(maxCardinality == b.maxCardinality);
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] = b.array[index];
 		}
 	}
 
-	size_t IntegerSet::count() const
+	std::size_t IntegerSet::count() const
 	{
-		size_t sum = 0;
-		for (size_t index = 0; index < arraySize; index++)
+		std::size_t sum = 0;
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			sum += countBits(array[index]);
 		}
 		return sum;
 	}
 
-	size_t IntegerSet::countCommon(const IntegerSet& b) const
+	std::size_t IntegerSet::countCommon(const IntegerSet& b) const
 	{
 		assert(maxCardinality == b.maxCardinality);
-		size_t sum = 0;
-		for (size_t index = 0; index < arraySize; index++)
+		std::size_t sum = 0;
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			uint64_t bits = array[index] & b.array[index];
 			sum += countBits(bits);
@@ -201,12 +201,12 @@ namespace kn
 		return sum;
 	}
 
-	size_t IntegerSet::countCommonLimit(const IntegerSet& b, size_t limit, size_t& w) const
+	std::size_t IntegerSet::countCommonLimit(const IntegerSet& b, std::size_t limit, std::size_t& w) const
 	{
 		assert(maxCardinality == b.maxCardinality);
-		size_t sum = 0;
-		size_t theW = maxCardinality;
-		for (size_t index = 0; index < arraySize; index++)
+		std::size_t sum = 0;
+		std::size_t theW = maxCardinality;
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			uint64_t bits = array[index] & b.array[index];
 			if (bits != 0)
@@ -222,7 +222,7 @@ namespace kn
 
 	void IntegerSet::invert()
 	{
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] = ~array[index];
 		}
@@ -233,7 +233,7 @@ namespace kn
 	void IntegerSet::intersectWith(const IntegerSet& b)
 	{
 		assert(maxCardinality == b.maxCardinality);
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] &= b.array[index];
 		}
@@ -242,7 +242,7 @@ namespace kn
 	void IntegerSet::unionWith(const IntegerSet& b)
 	{
 		assert(maxCardinality == b.maxCardinality);
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] |= b.array[index];
 		}
@@ -251,7 +251,7 @@ namespace kn
 	void IntegerSet::removeAll(const IntegerSet& b)
 	{
 		assert(maxCardinality == b.maxCardinality);
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] &= ~b.array[index];
 		}
@@ -261,7 +261,7 @@ namespace kn
 	{
 		assert(maxCardinality == a.maxCardinality);
 		assert(maxCardinality == b.maxCardinality);
-		for (size_t index = 0; index < arraySize; index++)
+		for (std::size_t index = 0; index < arraySize; index++)
 		{
 			array[index] = a.array[index] & b.array[index];
 		}

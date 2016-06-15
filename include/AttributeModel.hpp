@@ -11,6 +11,7 @@
 
 #include <string>
 #include <vector>
+#include <cstdlib>
 #include <Random.hpp>
 
 namespace kn
@@ -21,17 +22,17 @@ namespace kn
 	public:
 		virtual ~AttributeModel() {}
 
-		virtual size_t count() const
+		virtual std::size_t count() const
 		{
 			return 0;
 		}
 
-		virtual int relation(size_t idA, size_t idB) const
+		virtual int relation(std::size_t idA, std::size_t idB) const
 		{
 			return 0;
 		}
 
-		virtual double similarity(size_t idA, size_t idB) const
+		virtual double similarity(std::size_t idA, std::size_t idB) const
 		{
 			return (relation(idA, idB) == 0) ? 1.0 : 0.0;
 		}
@@ -51,7 +52,7 @@ namespace kn
 		{
 		}
 
-		virtual int relation(size_t idA, size_t idB) const
+		virtual int relation(std::size_t idA, std::size_t idB) const
 		{
 			if ((idA == idB) || (attributes[idA] == attributes[idB]))
 				return 0;

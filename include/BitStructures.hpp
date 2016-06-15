@@ -11,6 +11,7 @@
 
 #include <algorithm>
 #include <cstdint>
+#include <cstdlib>
 #include <assert.h>
 
 namespace kn
@@ -37,7 +38,7 @@ namespace kn
 
 	inline int bitToIndex(uint64_t bit)
 	{
-		return InverseDeBruijnSubsequenceTable[(size_t)(((uint64_t)bit * UINT64_C(0x043147259A7ABB7E)) >> 58)];
+		return InverseDeBruijnSubsequenceTable[(std::size_t)(((uint64_t)bit * UINT64_C(0x043147259A7ABB7E)) >> 58)];
 	}
 
     inline uint64_t singleBit(int index)
@@ -85,14 +86,14 @@ namespace kn
 
 			uint64_t* array;
 
-			size_t arraySize;
-			size_t currentIndex;
+			std::size_t arraySize;
+			std::size_t currentIndex;
 
-			size_t currentBaseValue;
+			std::size_t currentBaseValue;
 			uint64_t currentBits;
 			uint64_t currentMask;
 
-			Iterator(uint64_t* array, size_t arraySize)
+			Iterator(uint64_t* array, std::size_t arraySize)
 			{
 				this->array = array;
 				this->arraySize = arraySize;
@@ -121,7 +122,7 @@ namespace kn
 				return (currentBits != 0);
 			}
 
-			size_t next()
+			std::size_t next()
 			{
 				uint64_t bit = lowestBit(currentBits);
 				currentBits ^= bit;
@@ -131,8 +132,8 @@ namespace kn
 		};
 
 	private:
-		size_t maxCardinality;
-		size_t arraySize;
+		std::size_t maxCardinality;
+		std::size_t arraySize;
 		uint64_t* array;
 
 		bool verifyIsEmpty() const;
@@ -145,7 +146,7 @@ namespace kn
 
 	public:
 		IntegerSet();
-		IntegerSet(size_t maxCardinality);
+		IntegerSet(std::size_t maxCardinality);
 		IntegerSet(const IntegerSet& pattern);
 		~IntegerSet();
 
@@ -159,31 +160,31 @@ namespace kn
 			return Iterator(array, arraySize);
 		}
 
-		void setMaxCardinality(size_t maxCardinality);
+		void setMaxCardinality(std::size_t maxCardinality);
 
-        void add(size_t value)
+        void add(std::size_t value)
         {
             assert(value < maxCardinality);
 
-            size_t index = value / 64;
+            std::size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
             array[index] |= bit;
         }
 
-        void remove(size_t value)
+        void remove(std::size_t value)
         {
 			assert(value < maxCardinality);
 
-            size_t index = value / 64;
+            std::size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
             array[index] &= ~bit;
         }
 
-        bool contains(size_t value) const
+        bool contains(std::size_t value) const
         {
 			if (value >= maxCardinality) return false;
 
-            size_t index = value / 64;
+            std::size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
             return (0 != (array[index] & bit));
         }
@@ -197,9 +198,9 @@ namespace kn
 		void fill();
 		void copy(const IntegerSet& b);
 
-		size_t count() const;
-		size_t countCommon(const IntegerSet& b) const;
-		size_t countCommonLimit(const IntegerSet& b, size_t limit, size_t& w) const;
+		std::size_t count() const;
+		std::size_t countCommon(const IntegerSet& b) const;
+		std::size_t countCommonLimit(const IntegerSet& b, std::size_t limit, std::size_t& w) const;
 
 		void invert();
 
@@ -215,7 +216,7 @@ namespace kn
 		{
 			std::cout << head << "{";
 			bool first = true;
-			for (size_t k = 0; k < maxCardinality; k++)
+			for (std::size_t k = 0; k < maxCardinality; k++)
 			{
 				if (contains(k))
 				{

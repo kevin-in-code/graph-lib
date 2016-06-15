@@ -78,7 +78,7 @@ namespace kn
 
 	Graph::~Graph()
 	{
-		for (size_t index = vertices.size(); index > 0; index--)
+		for (std::size_t index = vertices.size(); index > 0; index--)
 		{
 			VertexID id = vertices[index - 1].id;
 			removeVertex(id);
@@ -137,8 +137,8 @@ namespace kn
 		EdgeInfo* nextFromSource = e->nextFromSource;
 		EdgeInfo* prevFromSource = e->prevFromSource;
 
-		size_t fromIndex = vertexIDtoIndex[e->u];
-		size_t toIndex = vertexIDtoIndex[e->v];
+		std::size_t fromIndex = vertexIDtoIndex[e->u];
+		std::size_t toIndex = vertexIDtoIndex[e->v];
 		vertices[fromIndex].outDegree--;
 		vertices[toIndex].inDegree--;
 		if (vertices[fromIndex].sourceEdges == e)
@@ -172,8 +172,8 @@ namespace kn
 
 	void Graph::insertEdge(EdgeID id, VertexID sourceID, VertexID destinationID, AttrID attrID, bool undirected)
 	{
-		size_t fromIndex = vertexIDtoIndex[sourceID];
-		size_t toIndex = vertexIDtoIndex[destinationID];
+		std::size_t fromIndex = vertexIDtoIndex[sourceID];
+		std::size_t toIndex = vertexIDtoIndex[destinationID];
 
 		VertexInfo* u = &vertices[fromIndex];
 		VertexInfo* v = &vertices[toIndex];
@@ -222,7 +222,7 @@ namespace kn
 	void Graph::vertexAdjacency(VertexID id, IntegerSet& row)
 	{
 		row.clear();
-		for (size_t index = 0; index < vertices.size(); index++)
+		for (std::size_t index = 0; index < vertices.size(); index++)
 		{
 			if (hasArc(id, vertices[index].id)) row.add(index);
 		}
@@ -231,7 +231,7 @@ namespace kn
 	std::unique_ptr<std::vector<IntegerSet>> Graph::adjacency()
 	{
 		std::unique_ptr<std::vector<IntegerSet>> matrix(new std::vector<IntegerSet>(vertices.size()));
-		for (size_t index = 0; index < vertices.size(); index++)
+		for (std::size_t index = 0; index < vertices.size(); index++)
 		{
 			vertexAdjacency(vertices[index].id, (*matrix)[index]);
 		}
@@ -249,7 +249,7 @@ namespace kn
 			return false;
 		}
 
-		size_t sourceID = it->second;
+		std::size_t sourceID = it->second;
 		const VertexInfo* u = &vertices[vertexIDtoIndex.at(sourceID)];
 
 		for (const EdgeInfo* ei = u->sourceEdges; ei; ei = ei->nextFromSource)
@@ -301,7 +301,7 @@ namespace kn
 		auto it = vertexIDtoIndex.find(id);
 		if (it == vertexIDtoIndex.end()) return false;
 
-		size_t index = it->second;
+		std::size_t index = it->second;
 
 		/// 1: remove all associated edges
 		VertexInfo* v = &vertices[index];
@@ -315,7 +315,7 @@ namespace kn
 		}
 
 		/// 2: update vertex ID to index mapping for indices that change
-		for (size_t other = index + 1; other < vertices.size(); other++)
+		for (std::size_t other = index + 1; other < vertices.size(); other++)
 		{
 			VertexID id = vertices[other].id;
 			vertexIDtoIndex[id] = other - 1;

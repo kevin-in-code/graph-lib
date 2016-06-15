@@ -25,9 +25,9 @@ namespace kn
 	class Graph
 	{
 	public:
-		typedef size_t VertexID;
-		typedef size_t EdgeID;
-		typedef size_t AttrID;
+		typedef std::size_t VertexID;
+		typedef std::size_t EdgeID;
+		typedef std::size_t AttrID;
 
 		struct Edge
 		{
@@ -41,8 +41,8 @@ namespace kn
 		struct Vertex
 		{
 			VertexID id;
-			size_t outDegree;
-			size_t inDegree;
+			std::size_t outDegree;
+			std::size_t inDegree;
 			AttrID attrID;
 		};
 
@@ -85,7 +85,7 @@ namespace kn
 		const AttributeModel* edgeAttributes;
 
 		std::vector<VertexInfo> vertices;
-		std::unordered_map<VertexID, size_t> vertexIDtoIndex;
+		std::unordered_map<VertexID, std::size_t> vertexIDtoIndex;
 		std::unordered_map<EdgeID, VertexID> edgeIDtoSourceID;
 
 		VertexID nextVertexID;
@@ -128,12 +128,12 @@ namespace kn
 
 		std::unique_ptr<std::vector<IntegerSet>> adjacency();
 
-		size_t countVertices() const
+		std::size_t countVertices() const
 		{
 			return vertices.size();
 		}
 
-		size_t countEdges() const
+		std::size_t countEdges() const
 		{
 			return edgeIDtoSourceID.size();
 		}
@@ -145,14 +145,14 @@ namespace kn
 
 		EdgeIterator exitingEdgeIterator(VertexID id) const
 		{
-			size_t index = vertexIDtoIndex.at(id);
+			std::size_t index = vertexIDtoIndex.at(id);
 			const VertexInfo* u = &vertices[index];
 			return EdgeIterator(u->sourceEdges, true);
 		}
 
 		EdgeIterator enteringEdgeIterator(VertexID id) const
 		{
-			size_t index = vertexIDtoIndex.at(id);
+			std::size_t index = vertexIDtoIndex.at(id);
 			const VertexInfo* v = &vertices[index];
 			return EdgeIterator(v->destinationEdges, false);
 		}
@@ -162,7 +162,7 @@ namespace kn
 			return (vertexIDtoIndex.find(id) != vertexIDtoIndex.end());
 		}
 
-		VertexID getVertexID(size_t index) const
+		VertexID getVertexID(std::size_t index) const
 		{
 			if (index < vertices.size())
 			{
@@ -195,7 +195,7 @@ namespace kn
 		{
 			VertexID id = nextVertexID++;
 
-			size_t index = vertices.size();
+			std::size_t index = vertices.size();
 			VertexInfo v;
 			v.id = id;
 			v.outDegree = 0;
@@ -278,11 +278,11 @@ namespace kn
 		std::vector<Pair> listOfEdges()
 		{
 			std::vector<Pair> result(countEdges());
-			for (size_t ui = 0; ui < vertices.size(); ui++)
+			for (std::size_t ui = 0; ui < vertices.size(); ui++)
 			{
 				VertexID u = vertices[ui].id;
 
-				for (size_t vi = 0; vi < vertices.size(); vi++)
+				for (std::size_t vi = 0; vi < vertices.size(); vi++)
 				{
 					VertexID v = vertices[vi].id;
 
@@ -298,11 +298,11 @@ namespace kn
 		std::vector<Pair> listOfArcs()
 		{
 			std::vector<Pair> result(countEdges());
-			for (size_t ui = 0; ui < vertices.size(); ui++)
+			for (std::size_t ui = 0; ui < vertices.size(); ui++)
 			{
 				VertexID u = vertices[ui].id;
 
-				for (size_t vi = 0; vi < vertices.size(); vi++)
+				for (std::size_t vi = 0; vi < vertices.size(); vi++)
 				{
 					VertexID v = vertices[vi].id;
 
@@ -318,11 +318,11 @@ namespace kn
 		std::vector<Pair> listOfAbsentEdges()
 		{
 			std::vector<Pair> result(countEdges());
-			for (size_t ui = 0; ui < vertices.size(); ui++)
+			for (std::size_t ui = 0; ui < vertices.size(); ui++)
 			{
 				VertexID u = vertices[ui].id;
 
-				for (size_t vi = 0; vi < vertices.size(); vi++)
+				for (std::size_t vi = 0; vi < vertices.size(); vi++)
 				{
 					VertexID v = vertices[vi].id;
 
@@ -338,11 +338,11 @@ namespace kn
 		std::vector<Pair> listOfAbsentArcs()
 		{
 			std::vector<Pair> result(countEdges());
-			for (size_t ui = 0; ui < vertices.size(); ui++)
+			for (std::size_t ui = 0; ui < vertices.size(); ui++)
 			{
 				VertexID u = vertices[ui].id;
 
-				for (size_t vi = 0; vi < vertices.size(); vi++)
+				for (std::size_t vi = 0; vi < vertices.size(); vi++)
 				{
 					VertexID v = vertices[vi].id;
 
@@ -363,8 +363,8 @@ namespace kn
 			friend class Graph;
 
 			const Graph* graph;
-			size_t index;
-			size_t count;
+			std::size_t index;
+			std::size_t count;
 
 			VertexIterator(const Graph* graph)
 			{

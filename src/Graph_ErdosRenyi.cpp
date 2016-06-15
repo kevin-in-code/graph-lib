@@ -29,10 +29,10 @@ namespace kn
 			return g;
 		}
 
-		void shuffleN(Random& r, std::vector<Graph::Pair>& vec, size_t n)
+		void shuffleN(Random& r, std::vector<Graph::Pair>& vec, std::size_t n)
 		{
 			uint32_t m = (uint32_t)vec.size();
-			for (size_t c = 0; c < n; c++)
+			for (std::size_t c = 0; c < n; c++)
 			{
 				uint32_t k = r.nextUInt(m);
 				if (k != 0)
@@ -58,7 +58,7 @@ namespace kn
 			std::vector<Graph::Pair> availableEdges = g->listOfAbsentEdges();
 			shuffleN(r, availableEdges, m);
 
-			for (size_t p = 0; p < m; p++)
+			for (std::size_t p = 0; p < m; p++)
 			{
 				Graph::Pair pair = availableEdges[p];
 				g->addEdge(pair.u, pair.v, r.nextUInt(numEdgeAttributes));

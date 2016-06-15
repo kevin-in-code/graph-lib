@@ -16,13 +16,13 @@ namespace kn
 		Graph* g = new Graph();
 
 		std::string line;
-		size_t numVertices = 0;
-		size_t row = 0;
+		std::size_t numVertices = 0;
+		std::size_t row = 0;
 		while (std::getline(stream, line))
 		{
 			std::stringstream lstream(line);
 			std::string entry;
-			size_t column = 0;
+			std::size_t column = 0;
 			while (std::getline(lstream, entry, delim))
 			{
 				if (column == numVertices)
