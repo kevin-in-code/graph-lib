@@ -48,8 +48,8 @@ int main(int argc, const char* argv[])
 {
     if ((argc < 4) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0)))
     {
-        std::cout << "usage: program (tomita|naude) (am|al) filename" << std::endl;
-        std::cout << "  e.g. program tomita al graph.al.csv" << std::endl;
+        std::cout << "usage: program algorithm format filename" << std::endl;
+        std::cout << "  e.g. program tomita dimacs graph.dimacs.txt" << std::endl;
         std::cout << std::endl;
         std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
         std::cout << " naude      use Naudé's pivot selection" << std::endl;
