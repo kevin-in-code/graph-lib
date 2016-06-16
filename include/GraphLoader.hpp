@@ -30,6 +30,8 @@ namespace kn
 		}
 
 		Graph* loadAdjacencyMatrix(char delim, bool directed);
+
+		Graph* loadAdjacencyList(char delim, bool directed);
 	};
 
 }

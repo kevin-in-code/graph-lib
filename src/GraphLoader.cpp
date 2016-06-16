@@ -23,8 +23,10 @@ namespace kn
 			std::stringstream lstream(line);
 			std::string entry;
 			std::size_t column = 0;
+			bool none = true;
 			while (std::getline(lstream, entry, delim))
 			{
+			    none = false;
 				if (column == numVertices)
 				{
 					g->addVertex(0);
@@ -33,17 +35,55 @@ namespace kn
 				int value = std::stoi(entry);
 				if (value != 0)
 				{
-					if (directed || (!g->hasEdge(row, column)))
+					if (directed)
+						g->addArc(row, column, 0);
+					else
+					if (!g->hasEdge(row, column))
 					{
-						if (directed)
-							g->addArc(row, column, 0);
-						else
-							g->addEdge(row, column, 0);
+    					g->addEdge(row, column, 0);
 					}
 				}
 				column++;
 			}
+			if (none) break;
 			row++;
+		}
+
+		return g;
+	}
+
+	Graph* GraphLoader::loadAdjacencyList(char delim, bool directed)
+	{
+		Graph* g = new Graph();
+
+		std::string line;
+		std::size_t numVertices = 0;
+		while (std::getline(stream, line))
+		{
+			std::stringstream lstream(line);
+			std::string entry;
+			if (std::getline(lstream, entry, delim))
+			{
+				std::size_t source = (std::size_t) std::stoi(entry);
+			    while (std::getline(lstream, entry, delim))
+			    {
+    				std::size_t dest = (std::size_t) std::stoi(entry);
+				    while (dest > numVertices)
+				    {
+					    g->addVertex(0);
+					    numVertices++;
+				    }
+					if (directed)
+						g->addArc(source, dest, 0);
+					else
+					if (!g->hasEdge(source, dest))
+					{
+    					g->addEdge(source, dest, 0);
+					}
+			    }
+			}
+			else
+			    break;
 		}
 
 		return g;

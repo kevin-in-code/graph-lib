@@ -1,8 +1,7 @@
 
 /**
- * Main_TCS_2015
- * This program is a reimplementation of the code used in the experimental section of my 2015 TCS article.
- * It is slightly more general than the original code, but it implements and tests the same algorithms.
+ * CountingCliqueReceiver
+ * This program is a basic example of clique enumeration applied to text graph file.
  *
  * @author Kevin A. Naudé
  * @version 1.1
@@ -47,31 +46,54 @@ void test(CliqueEnumerator ce, Graph* graph)
 
 int main(int argc, const char* argv[])
 {
-	if ((argc < 3) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0)))
+	if ((argc < 4) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0)))
 	{
-		std::cout << "usage: program (tomita|naude) filename" << std::endl;
-		std::cout << "  e.g. program tomita graph.csv" << std::endl;
+		std::cout << "usage: program (tomita|naude) (am|al) filename" << std::endl;
+		std::cout << "  e.g. program tomita al graph.al.csv" << std::endl;
 		std::cout << std::endl;
 		std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
-		std::cout << " naude      use Naud\202's pivot selection" << std::endl;
-		std::cout << " filename   file containting the graph adjacency matrix in CSV format" << std::endl;
+		std::cout << " naude      use Naudé's pivot selection" << std::endl;
+		std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
+		std::cout << " al         file is adjacency list in CSV format" << std::endl;
+		std::cout << " filename   file containing the graph in the specified format" << std::endl;
 	}
 	else
 	{
 		std::string filename(argv[2]);
 		GraphLoader loader(filename);
+		Graph* graph = nullptr;
 
-		Graph* graph = loader.loadAdjacencyMatrix(',', false);
-
-		if (strcmp(argv[1], "tomita") == 0)
+		if (strcmp(argv[2], "am") == 0)
 		{
-			test(&AllCliques_Tomita, graph);
+			graph = loader.loadAdjacencyMatrix(',', false);
+		}
+		else
+		if (strcmp(argv[2], "al") == 0)
+		{
+			graph = loader.loadAdjacencyList(',', false);
 		}
 		else
 		{
-			test(&AllCliques_Naude, graph);
+    		std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
 		}
+		
+		if (graph)
+		{
+		    if (strcmp(argv[1], "tomita") == 0)
+		    {
+			    test(&AllCliques_Tomita, graph);
+		    }
+		    else
+		    if (strcmp(argv[1], "naude") == 0)
+		    {
+			    test(&AllCliques_Naude, graph);
+		    }
+		    else
+		    {
+        		std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
+		    }
 
-		delete graph;
+		    delete graph;
+		}
 	}
 }
