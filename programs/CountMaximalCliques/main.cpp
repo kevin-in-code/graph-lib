@@ -74,14 +74,14 @@ int main(int argc, const char* argv[])
 				graph = loader.loadAdjacencyMatrix(',', false);
 			}
 			else
-				if (strcmp(argv[2], "al") == 0)
-				{
-					graph = loader.loadAdjacencyList(',', false);
-				}
-				else
-				{
-					std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
-				}
+			if (strcmp(argv[2], "al") == 0)
+			{
+				graph = loader.loadAdjacencyList(',', false);
+			}
+			else
+			{
+				std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
+			}
 
 			if (graph)
 			{

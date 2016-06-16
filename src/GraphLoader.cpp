@@ -64,11 +64,16 @@ namespace kn
 			std::string entry;
 			if (std::getline(lstream, entry, delim))
 			{
-				std::size_t source = (std::size_t) std::stoi(entry);
-			    while (std::getline(lstream, entry, delim))
+				std::size_t source = (std::size_t) std::stoi(entry) - 1;
+				while (source >= numVertices)
+				{
+					g->addVertex(0);
+					numVertices++;
+				}
+				while (std::getline(lstream, entry, delim))
 			    {
-    				std::size_t dest = (std::size_t) std::stoi(entry);
-				    while (dest > numVertices)
+    				std::size_t dest = (std::size_t) std::stoi(entry) - 1;
+				    while (dest >= numVertices)
 				    {
 					    g->addVertex(0);
 					    numVertices++;
