@@ -29,6 +29,11 @@ namespace kn
 			stream.open(filename);
 		}
 
+		bool isOpen() const
+		{
+			return stream.is_open();
+		}
+
 		Graph* loadAdjacencyMatrix(char delim, bool directed);
 
 		Graph* loadAdjacencyList(char delim, bool directed);

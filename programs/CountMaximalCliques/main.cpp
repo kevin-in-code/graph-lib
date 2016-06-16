@@ -63,37 +63,44 @@ int main(int argc, const char* argv[])
 		GraphLoader loader(filename);
 		Graph* graph = nullptr;
 
-		if (strcmp(argv[2], "am") == 0)
+		if (!loader.isOpen())
 		{
-			graph = loader.loadAdjacencyMatrix(',', false);
-		}
-		else
-		if (strcmp(argv[2], "al") == 0)
-		{
-			graph = loader.loadAdjacencyList(',', false);
+			std::cout << "file \"" << argv[3] << "\" could not be opened" << std::endl;
 		}
 		else
 		{
-    		std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
-		}
-		
-		if (graph)
-		{
-		    if (strcmp(argv[1], "tomita") == 0)
-		    {
-			    test(&AllCliques_Tomita, graph);
-		    }
-		    else
-		    if (strcmp(argv[1], "naude") == 0)
-		    {
-			    test(&AllCliques_Naude, graph);
-		    }
-		    else
-		    {
-        		std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
-		    }
+			if (strcmp(argv[2], "am") == 0)
+			{
+				graph = loader.loadAdjacencyMatrix(',', false);
+			}
+			else
+				if (strcmp(argv[2], "al") == 0)
+				{
+					graph = loader.loadAdjacencyList(',', false);
+				}
+				else
+				{
+					std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
+				}
 
-		    delete graph;
+			if (graph)
+			{
+				if (strcmp(argv[1], "tomita") == 0)
+				{
+					test(&AllCliques_Tomita, graph);
+				}
+				else
+					if (strcmp(argv[1], "naude") == 0)
+					{
+						test(&AllCliques_Naude, graph);
+					}
+					else
+					{
+						std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
+					}
+
+				delete graph;
+			}
 		}
 	}
 }
