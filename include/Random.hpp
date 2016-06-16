@@ -1,10 +1,11 @@
+
 #pragma once
 
 /**
 * Random.hpp
 * Purpose: Base class for PRNG implementations.
 *
-* @author Kevin A. Naudé
+* @author Kevin A. NaudÃ©
 * @version 1.1
 */
 

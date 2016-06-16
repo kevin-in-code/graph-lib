@@ -1,10 +1,11 @@
+
 #pragma once
 
 /**
  * MersenneTwister.hpp
  * Purpose: This is a correctly initialised implementation of the long period Mersenne Twister PRNG.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @note Based on published works.
  * @version 1.1
  */

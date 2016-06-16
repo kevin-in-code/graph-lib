@@ -5,7 +5,7 @@
  * AttributeModel.hpp
  * Purpose: An abstract base model for indexed attributes.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @version 1.1
  */
 

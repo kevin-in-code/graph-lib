@@ -5,7 +5,7 @@
  * BitStructures.hpp
  * Purpose: To provide an efficient non-negative integer set.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @version 1.1
  */
 

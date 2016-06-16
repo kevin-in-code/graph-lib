@@ -5,7 +5,7 @@
  * Graph.hpp
  * Purpose: An class for the representation of attributed graphs and digraphs.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @version 1.1
  */
 

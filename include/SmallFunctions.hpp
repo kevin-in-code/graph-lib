@@ -5,7 +5,7 @@
  * SmallFunctions.hpp
  * Purpose: Various small utility functions.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @version 1.1
  */
 

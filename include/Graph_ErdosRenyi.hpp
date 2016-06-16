@@ -5,7 +5,7 @@
  * Graph_ErdosRenyi.hpp
  * Purpose: Generate random graphs using the Gnp and Gnm Erdos-Renyi models.
  *
- * @author Kevin A. Naudé
+ * @author Kevin A. NaudÃ©
  * @version 1.1
  */
 
