@@ -99,12 +99,12 @@ namespace kn
         Graph* g = new Graph();
 
         std::string line;
+        std::size_t numVertices = 0;
         while (std::getline(stream, line))
         {
             std::stringstream lstream(line);
             
             std::string key = "";
-            std::size_t numVertices = 0;
             lstream >> key;
             
             if (key != "")
@@ -130,12 +130,6 @@ namespace kn
                     {
                         g->addEdge(source, dest, 0);
                     }
-                }
-                else
-                {
-                    // Discard the line
-                    std::string ignore;
-                    std::getline(stream, ignore);
                 }
             }
             else
