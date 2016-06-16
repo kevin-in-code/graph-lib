@@ -93,5 +93,56 @@ namespace kn
 
         return g;
     }
+
+    Graph* GraphLoader::loadDIMACS()
+    {
+        Graph* g = new Graph();
+
+        std::string line;
+        while (std::getline(stream, line))
+        {
+            std::stringstream lstream(line);
+            
+            std::string key = "";
+            std::size_t numVertices = 0;
+            lstream >> key;
+            
+            if (key != "")
+            {
+                if (key == "e")
+                {
+                    std::size_t source, dest;
+                    lstream >> source;
+                    lstream >> dest;
+                    source--;
+                    dest--;
+                    while (source >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    while (dest >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    if (!g->hasEdge(source, dest))
+                    {
+                        g->addEdge(source, dest, 0);
+                    }
+                }
+                else
+                {
+                    // Discard the line
+                    std::string ignore;
+                    std::getline(stream, ignore);
+                }
+            }
+            else
+                break;
+        }
+
+        return g;
+    }
 }
 

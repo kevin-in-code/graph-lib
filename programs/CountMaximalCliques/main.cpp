@@ -55,6 +55,7 @@ int main(int argc, const char* argv[])
         std::cout << " naude      use Naudé's pivot selection" << std::endl;
         std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
+        std::cout << " dimacs     file is in DIMACS format" << std::endl;
         std::cout << " filename   file containing the graph in the specified format" << std::endl;
     }
     else
@@ -79,6 +80,11 @@ int main(int argc, const char* argv[])
                 graph = loader.loadAdjacencyList(',', false);
             }
             else
+            if (strcmp(argv[2], "dimacs") == 0)
+            {
+                graph = loader.loadDIMACS();
+            }
+            else
             {
                 std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
             }
@@ -90,14 +96,14 @@ int main(int argc, const char* argv[])
                     test(&AllCliques_Tomita, graph);
                 }
                 else
-                    if (strcmp(argv[1], "naude") == 0)
-                    {
-                        test(&AllCliques_Naude, graph);
-                    }
-                    else
-                    {
-                        std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
-                    }
+                if (strcmp(argv[1], "naude") == 0)
+                {
+                    test(&AllCliques_Naude, graph);
+                }
+                else
+                {
+                    std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
+                }
 
                 delete graph;
             }

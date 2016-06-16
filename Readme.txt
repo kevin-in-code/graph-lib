@@ -8,12 +8,10 @@ Executable programs included:
     CountMaximalCliques
 
 CountMaximalCliques can apply clique enumeration to a graph loaded from a file.
-The graph file must either contain the adjacency matrix or the adjacency list in CSV format.
-Example graphs are provided in
-    programs/CountMaximalCliques/graph.am.csv, and
-    programs/CountMaximalCliques/graph.al.csv.
-
-Adjacency lists occupy considerably less storage if the graphs do no have high edge density.
+The graph file must be in one of several common text formats.  Example graphs are provided:
+    programs/CountMaximalCliques/graph.am.csv,
+    programs/CountMaximalCliques/graph.al.csv, and
+    programs/CountMaximalCliques/graph.dimacs.txt.
 
 
 How to build with Visual Studio 2015
