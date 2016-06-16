@@ -15,10 +15,10 @@
 namespace kn
 {
 
-	double roundEven(double x)
-	{
-		return round(x * 0.5) * 2.0;
-	}
+    double roundEven(double x)
+    {
+        return round(x * 0.5) * 2.0;
+    }
 
     template<typename T, T x, T y, bool done>
     struct ConstSqrtNewton

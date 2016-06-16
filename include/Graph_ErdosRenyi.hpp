@@ -19,10 +19,10 @@
 namespace kn
 {
 
-	namespace ErdosRenyi
-	{
-		Graph* Gnp(Random& r, uint32_t n, double p, const AttributeModel* vertexAttributes, const AttributeModel* edgeAttributes);
-		Graph* Gnm(Random& r, uint32_t n, uint32_t m, const AttributeModel* vertexAttributes, const AttributeModel* edgeAttributes);
-	}
+    namespace ErdosRenyi
+    {
+        Graph* Gnp(Random& r, uint32_t n, double p, const AttributeModel* vertexAttributes, const AttributeModel* edgeAttributes);
+        Graph* Gnm(Random& r, uint32_t n, uint32_t m, const AttributeModel* vertexAttributes, const AttributeModel* edgeAttributes);
+    }
 
 }

@@ -16,27 +16,27 @@
 namespace kn
 {
 
-	class GraphLoader
-	{
-	private:
-		std::ifstream stream;
-		char buffer[4096];
+    class GraphLoader
+    {
+    private:
+        std::ifstream stream;
+        char buffer[4096];
 
-	public:
-		GraphLoader(const std::string& filename)
-		{
-			stream.rdbuf()->pubsetbuf(buffer, sizeof(buffer));
-			stream.open(filename);
-		}
+    public:
+        GraphLoader(const std::string& filename)
+        {
+            stream.rdbuf()->pubsetbuf(buffer, sizeof(buffer));
+            stream.open(filename);
+        }
 
-		bool isOpen() const
-		{
-			return stream.is_open();
-		}
+        bool isOpen() const
+        {
+            return stream.is_open();
+        }
 
-		Graph* loadAdjacencyMatrix(char delim, bool directed);
+        Graph* loadAdjacencyMatrix(char delim, bool directed);
 
-		Graph* loadAdjacencyList(char delim, bool directed);
-	};
+        Graph* loadAdjacencyList(char delim, bool directed);
+    };
 
 }

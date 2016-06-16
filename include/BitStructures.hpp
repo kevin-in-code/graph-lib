@@ -34,12 +34,12 @@ namespace kn
      * other sequences that produce the same behaviour although they may be numerically distinct.
      */
     extern const int InverseDeBruijnSubsequenceTable[64];
-	extern const int BitCountTable[256];
+    extern const int BitCountTable[256];
 
-	inline int bitToIndex(uint64_t bit)
-	{
-		return InverseDeBruijnSubsequenceTable[(std::size_t)(((uint64_t)bit * UINT64_C(0x043147259A7ABB7E)) >> 58)];
-	}
+    inline int bitToIndex(uint64_t bit)
+    {
+        return InverseDeBruijnSubsequenceTable[(std::size_t)(((uint64_t)bit * UINT64_C(0x043147259A7ABB7E)) >> 58)];
+    }
 
     inline uint64_t singleBit(int index)
     {
@@ -65,102 +65,102 @@ namespace kn
     }
 
 
-	/**
-	* The IntegerSet provides a fast implementation of a set of non-negative integers,
-	* by means of a bit vector. Each binary digit designates the presence or absence
-	* of a candidate element.
-	*/
-	class IntegerSet
+    /**
+    * The IntegerSet provides a fast implementation of a set of non-negative integers,
+    * by means of a bit vector. Each binary digit designates the presence or absence
+    * of a candidate element.
+    */
+    class IntegerSet
     {
-	public:
-		/**
-		* The IntegerSet Iterator provides fast iteration through the elements of a bit vector.
-		* If the bit vector is sparse, the iteration remains fairly efficient by the following:
-		*   - zero words are skipped immediately (skipping 64 possible entries at once)
-		*   - non-zero words are processed in O(n), where n is the number of bits set in the word.
-		*/
-		struct Iterator
-		{
-		private:
-			friend class IntegerSet;
+    public:
+        /**
+        * The IntegerSet Iterator provides fast iteration through the elements of a bit vector.
+        * If the bit vector is sparse, the iteration remains fairly efficient by the following:
+        *   - zero words are skipped immediately (skipping 64 possible entries at once)
+        *   - non-zero words are processed in O(n), where n is the number of bits set in the word.
+        */
+        struct Iterator
+        {
+        private:
+            friend class IntegerSet;
 
-			uint64_t* array;
+            uint64_t* array;
 
-			std::size_t arraySize;
-			std::size_t currentIndex;
+            std::size_t arraySize;
+            std::size_t currentIndex;
 
-			std::size_t currentBaseValue;
-			uint64_t currentBits;
-			uint64_t currentMask;
+            std::size_t currentBaseValue;
+            uint64_t currentBits;
+            uint64_t currentMask;
 
-			Iterator(uint64_t* array, std::size_t arraySize)
-			{
-				this->array = array;
-				this->arraySize = arraySize;
+            Iterator(uint64_t* array, std::size_t arraySize)
+            {
+                this->array = array;
+                this->arraySize = arraySize;
 
-				currentIndex = 0;
-				currentBaseValue = 0;
-				currentBits = (arraySize) ? array[0] : 0;
-				currentMask = 0xFFFFFFFFFFFFFFFFULL;
-			}
+                currentIndex = 0;
+                currentBaseValue = 0;
+                currentBits = (arraySize) ? array[0] : 0;
+                currentMask = 0xFFFFFFFFFFFFFFFFULL;
+            }
 
-		public:
-			bool hasNext()
-			{
-				if (currentIndex < arraySize)
-				{
-					currentBits = array[currentIndex] & currentMask;
-				}
-				while ((currentBits == 0) && (currentIndex + 1 < arraySize))
-				{
-					currentIndex++;
-					currentBits = array[currentIndex];
-					currentMask = 0xFFFFFFFFFFFFFFFFULL;
-					currentBaseValue += 64;
-				}
+        public:
+            bool hasNext()
+            {
+                if (currentIndex < arraySize)
+                {
+                    currentBits = array[currentIndex] & currentMask;
+                }
+                while ((currentBits == 0) && (currentIndex + 1 < arraySize))
+                {
+                    currentIndex++;
+                    currentBits = array[currentIndex];
+                    currentMask = 0xFFFFFFFFFFFFFFFFULL;
+                    currentBaseValue += 64;
+                }
 
-				return (currentBits != 0);
-			}
+                return (currentBits != 0);
+            }
 
-			std::size_t next()
-			{
-				uint64_t bit = lowestBit(currentBits);
-				currentBits ^= bit;
-				currentMask = ~(bit - 1) - bit;
-				return currentBaseValue + bitToIndex(bit);
-			}
-		};
+            std::size_t next()
+            {
+                uint64_t bit = lowestBit(currentBits);
+                currentBits ^= bit;
+                currentMask = ~(bit - 1) - bit;
+                return currentBaseValue + bitToIndex(bit);
+            }
+        };
 
-	private:
-		std::size_t maxCardinality;
-		std::size_t arraySize;
-		uint64_t* array;
+    private:
+        std::size_t maxCardinality;
+        std::size_t arraySize;
+        uint64_t* array;
 
-		bool verifyIsEmpty() const;
+        bool verifyIsEmpty() const;
 
-		void sanitiseHighBits()
-		{
-			/// Here, I correct for a cardinality that does not lie on a 64-bit boundary.
-			array[arraySize - 1] &= (singleBit(maxCardinality & 63) - 1);
-		}
+        void sanitiseHighBits()
+        {
+            /// Here, I correct for a cardinality that does not lie on a 64-bit boundary.
+            array[arraySize - 1] &= (singleBit(maxCardinality & 63) - 1);
+        }
 
-	public:
-		IntegerSet();
-		IntegerSet(std::size_t maxCardinality);
-		IntegerSet(const IntegerSet& pattern);
-		~IntegerSet();
+    public:
+        IntegerSet();
+        IntegerSet(std::size_t maxCardinality);
+        IntegerSet(const IntegerSet& pattern);
+        ~IntegerSet();
 
-		IntegerSet& operator=(const IntegerSet& pattern);
+        IntegerSet& operator=(const IntegerSet& pattern);
 
-		IntegerSet(IntegerSet&& pattern);
-		IntegerSet& operator=(IntegerSet&& pattern);
+        IntegerSet(IntegerSet&& pattern);
+        IntegerSet& operator=(IntegerSet&& pattern);
 
-		Iterator iterator() const
-		{
-			return Iterator(array, arraySize);
-		}
+        Iterator iterator() const
+        {
+            return Iterator(array, arraySize);
+        }
 
-		void setMaxCardinality(std::size_t maxCardinality);
+        void setMaxCardinality(std::size_t maxCardinality);
 
         void add(std::size_t value)
         {
@@ -173,7 +173,7 @@ namespace kn
 
         void remove(std::size_t value)
         {
-			assert(value < maxCardinality);
+            assert(value < maxCardinality);
 
             std::size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
@@ -182,7 +182,7 @@ namespace kn
 
         bool contains(std::size_t value) const
         {
-			if (value >= maxCardinality) return false;
+            if (value >= maxCardinality) return false;
 
             std::size_t index = value / 64;
             uint64_t bit = singleBit(value % 64);
@@ -194,40 +194,40 @@ namespace kn
             return (array[0] == 0) && verifyIsEmpty();
         }
 
-		void clear();
-		void fill();
-		void copy(const IntegerSet& b);
+        void clear();
+        void fill();
+        void copy(const IntegerSet& b);
 
-		std::size_t count() const;
-		std::size_t countCommon(const IntegerSet& b) const;
-		std::size_t countCommonLimit(const IntegerSet& b, std::size_t limit, std::size_t& w) const;
+        std::size_t count() const;
+        std::size_t countCommon(const IntegerSet& b) const;
+        std::size_t countCommonLimit(const IntegerSet& b, std::size_t limit, std::size_t& w) const;
 
-		void invert();
+        void invert();
 
-		void intersectWith(const IntegerSet& b);
-		void unionWith(const IntegerSet& b);
+        void intersectWith(const IntegerSet& b);
+        void unionWith(const IntegerSet& b);
 
-		void removeAll(const IntegerSet& b);
+        void removeAll(const IntegerSet& b);
 
-		void intersection(const IntegerSet& a, const IntegerSet& b);
+        void intersection(const IntegerSet& a, const IntegerSet& b);
 
-		/*
-		void list(const char* head)
-		{
-			std::cout << head << "{";
-			bool first = true;
-			for (std::size_t k = 0; k < maxCardinality; k++)
-			{
-				if (contains(k))
-				{
-					if (!first) std::cout << ",";
-					std::cout << " " << k;
-					first = false;
-				}
-			}
-			std::cout << "}" << std::endl;
-		}
-		*/
+        /*
+        void list(const char* head)
+        {
+            std::cout << head << "{";
+            bool first = true;
+            for (std::size_t k = 0; k < maxCardinality; k++)
+            {
+                if (contains(k))
+                {
+                    if (!first) std::cout << ",";
+                    std::cout << " " << k;
+                    first = false;
+                }
+            }
+            std::cout << "}" << std::endl;
+        }
+        */
 
     };
 

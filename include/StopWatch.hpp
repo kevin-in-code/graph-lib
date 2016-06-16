@@ -28,76 +28,76 @@ typedef struct timeval TimerValue;
 namespace kn
 {
 
-	class StopWatch
-	{
-	private:
+    class StopWatch
+    {
+    private:
 #ifdef _WIN32
-		typedef LARGE_INTEGER TimerValue;
+        typedef LARGE_INTEGER TimerValue;
 #else
-		typedef struct timeval TimerValue;
+        typedef struct timeval TimerValue;
 #endif
-		double seconds;
-		TimerValue startTime;
-		TimerValue endTime;
+        double seconds;
+        TimerValue startTime;
+        TimerValue endTime;
 
 #ifdef _WIN32
-		TimerValue frequency;
+        TimerValue frequency;
 #endif
 
-		static void clear(TimerValue& tv)
-		{
+        static void clear(TimerValue& tv)
+        {
 #ifdef _WIN32
-			tv.QuadPart = 0;
+            tv.QuadPart = 0;
 #else
-			tv.tv_sec = tv.tv_usec = 0;
+            tv.tv_sec = tv.tv_usec = 0;
 #endif
-		}
+        }
 
-		static void capture(TimerValue& tv)
-		{
+        static void capture(TimerValue& tv)
+        {
 #ifdef _WIN32
-			QueryPerformanceCounter(&tv);
+            QueryPerformanceCounter(&tv);
 #else
-			gettimeofday(&tv, NULL);
+            gettimeofday(&tv, NULL);
 #endif
-		}
+        }
 
-	public:
-		StopWatch()
-		{
-			reset();
-		}
+    public:
+        StopWatch()
+        {
+            reset();
+        }
 
-		double elapsedSeconds()
-		{
-			return seconds;
-		}
+        double elapsedSeconds()
+        {
+            return seconds;
+        }
 
-		void start()
-		{
-			capture(startTime);
-		}
+        void start()
+        {
+            capture(startTime);
+        }
 
-		void stop()
-		{
-			capture(endTime);
+        void stop()
+        {
+            capture(endTime);
 #ifdef _WIN32
-			double time = ((double)(endTime.QuadPart - startTime.QuadPart) / frequency.QuadPart);
+            double time = ((double)(endTime.QuadPart - startTime.QuadPart) / frequency.QuadPart);
 #else
-			double time = ((double)(endTime.tv_sec) + 0.000001*endTime.tv_usec) - ((double)(startTime.tv_sec) + 0.000001*startTime.tv_usec);
+            double time = ((double)(endTime.tv_sec) + 0.000001*endTime.tv_usec) - ((double)(startTime.tv_sec) + 0.000001*startTime.tv_usec);
 #endif
-			if (time >= 0.0) seconds += time;
-		}
+            if (time >= 0.0) seconds += time;
+        }
 
-		void reset()
-		{
-			seconds = 0.0;
-			clear(startTime);
-			clear(endTime);
+        void reset()
+        {
+            seconds = 0.0;
+            clear(startTime);
+            clear(endTime);
 #ifdef _WIN32
-			QueryPerformanceFrequency(&frequency);
+            QueryPerformanceFrequency(&frequency);
 #endif
-		}
-	};
+        }
+    };
 
 }

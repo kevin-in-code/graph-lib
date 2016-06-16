@@ -18,18 +18,18 @@
 namespace kn
 {
 
-	class CliqueReceiver
-	{
-	public:
-		virtual void onClear() {}
+    class CliqueReceiver
+    {
+    public:
+        virtual void onClear() {}
 
-		virtual void onClique(const Graph& graph, const IntegerSet& vertices) {}
+        virtual void onClique(const Graph& graph, const IntegerSet& vertices) {}
 
-		virtual void onComplete() {}
-	};
+        virtual void onComplete() {}
+    };
 
-	void AllCliques_Tomita(const Graph* graph, CliqueReceiver* receiver);
+    void AllCliques_Tomita(const Graph* graph, CliqueReceiver* receiver);
 
-	void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver);
+    void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver);
 
 }
