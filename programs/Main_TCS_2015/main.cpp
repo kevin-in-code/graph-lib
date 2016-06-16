@@ -94,7 +94,7 @@ int main(int argc, const char* argv[])
         std::cout << "  e.g. program tomita 123" << std::endl;
         std::cout << std::endl;
         std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
-        std::cout << " naude      use Naud\202's pivot selection" << std::endl;
+        std::cout << " naude      use Naude's pivot selection" << std::endl;
         std::cout << " seed       integer, seed for Mersenne Twiser initialisation" << std::endl;
         std::cout << " maxcount   integer, maximum sample size in any test case" << std::endl;
         std::cout << " diffuse    yes or no, apply error diffusion to discretely selected densities" << std::endl;

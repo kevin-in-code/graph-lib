@@ -52,7 +52,7 @@ int main(int argc, const char* argv[])
         std::cout << "  e.g. program tomita dimacs graph.dimacs.txt" << std::endl;
         std::cout << std::endl;
         std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
-        std::cout << " naude      use Naudé's pivot selection" << std::endl;
+        std::cout << " naude      use Naude's pivot selection" << std::endl;
         std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
         std::cout << " dimacs     file is in DIMACS format" << std::endl;
