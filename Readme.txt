@@ -1,18 +1,40 @@
 GraphLib
 --------
 
-This repository provides code that may be run to verify published experimental results.
+This repository provides code that may be run to verify published experimental
+results.  It is not intended for inclusion into production projects, although
+that is fairly easy to do.
 
-Executable programs included:
-    Main_TCS_2015
-    CountMaximalCliques
+The code is organised as follows:
+    include     - contains the headers of the library
+    src         - contains the main library source code
+    programs/*  - each directory contains a small example, test, or experiment
 
-CountMaximalCliques can apply clique enumeration to a graph loaded from a file.
-The graph file must be in one of several common text formats.  Example graphs are provided:
+Examples include:
+    Main_TCS_2015       - experiments performed for my TCS 2015 publication
+    CountMaximalCliques - a simple demonstration program
+
+The demonstration CountMaximalCliques program can apply clique enumeration to a
+graph loaded from a file.  The graph file must be in one of several common text
+formats.  The following simple graphs are provided for testing:
+
     programs/CountMaximalCliques/graph.am.csv,
     programs/CountMaximalCliques/graph.al.csv, and
     programs/CountMaximalCliques/graph.dimacs.txt.
 
+In general, compiling the software should be straightforward.  Build scripts are
+provided in the form of Makefiles for GNU Make, and premake5 lua scripts.
+
+The software should compile without errors, although cross-platform development
+may provide occassional surprises.  Building under Microsoft Visual Studio,
+MinGW G++, and Linux G++ should nevertheless succeed.
+
+Software Branches
+-----------------
+
+The master git branch will always show the latest full version, including all
+complete programs.  The library, sans programs, is found in the common branch.
+Finally, there is generally a separate branch for each program or program group.
 
 How to build with Visual Studio 2015
 ------------------------------------
@@ -31,7 +53,4 @@ How to build with GCC
 
 1. make
 
-This should compile without any gcc/g++ errors.  Note, however, that limited testing has
-been done under Linux.  In particular, I am not certain about the accuracy of the timing
-that is available.
 

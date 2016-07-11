@@ -1,52 +1,80 @@
+SRCDIR      := src
+INCDIR      := include
+BUILDDIR    := build
+LIBDIR      := lib
+BINDIR      := bin
+PROGDIR     := programs
+
 CXX=g++
-CXXFLAGS=-std=c++11 -W -Wextra -pedantic -O3 -I./include/
+CXXFLAGS=-std=c++11 -W -Wextra -pedantic -O3 -I$(INCDIR) -L$(LIBDIR)
 AR=ar
 
-all: ./bin/Main_TCS_2015 ./bin/CountMaximalCliques
+GRAPHLIB=$(LIBDIR)/libgraphlib.a
+GRAPHLIBLINK=graphlib
 
-./bin/Main_TCS_2015: ./build/Main_TCS_2015.o ./lib/graphlib.a
-	mkdir -p ./bin
-	$(CXX) $(CXXFLAGS) $^ -o $@
+define DEFAULT_MAKEFILE_INC
+$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$(wildcard $(PROGDIR)/$T/*.cpp))
+	$$(CXX) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)
 
-./build/Main_TCS_2015.o: ./programs/Main_TCS_2015/main.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp
+	$$(CXX) $$(CXXFLAGS) -c $$^ -o $$@
+endef
 
+PROGMAKEFILES=$(wildcard $(PROGDIR)/*/Makefile.inc)
 
+MAKEFILES=$(patsubst %,$(PROGDIR)/%/Makefile.inc,$(sort $(notdir $(patsubst %/,%,$(wildcard $(PROGDIR)/*)))))
+PROGNAMES=$(sort $(notdir $(patsubst %/,%,$(dir $(PROGMAKEFILES)))))
+PROGBINFILES=$(addprefix $(BINDIR)/,$(PROGNAMES))
+SAYPROGNAMES=$(patsubst %,say-%,$(PROGNAMES))
 
-./bin/CountMaximalCliques: ./build/CountMaximalCliques.o ./lib/graphlib.a
-	mkdir -p ./bin
-	$(CXX) $(CXXFLAGS) $^ -o $@
+CPPFILES=$(wildcard $(SRCDIR)/*.cpp)
+OBJFILES=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(CPPFILES))
 
-./build/CountMaximalCliques.o: ./programs/CountMaximalCliques/main.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+.SECONDEXPANSION:
+.PHONY: clean cleanall say-graphlib $(SAYPROGNAMES)
 
+$(MAKEFILES): | Makefile
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$(wildcard $(PROGDIR)/$T/*.cpp))';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -c $$^ -o $$@';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
 
+$(BUILDDIR):
+	mkdir -p $(BUILDDIR)
 
-./lib/graphlib.a: ./build/MersenneTwister.o ./build/BitStructures.o ./build/Graph.o ./build/GraphLoader.o ./build/Graph_ErdosRenyi.o ./build/CliqueEnumeration.o
-	mkdir -p ./lib
-	$(AR) rvs ./lib/graphlib.a $^
+$(LIBDIR): $(BUILDDIR)
+	mkdir -p $(LIBDIR)
 
-./build/MersenneTwister.o: ./src/MersenneTwister.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(BINDIR): $(BUILDDIR)
+	mkdir -p $(BINDIR)
 
-./build/BitStructures.o: ./src/BitStructures.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+say-graphlib: $(LIBDIR)
+	@echo "======================================================================"
+	@echo "GraphLib"
+	@echo "----------------------------------------------------------------------"
 
-./build/Graph.o: ./src/Graph.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(SAYPROGNAMES): $(BINDIR)
+	@echo "======================================================================"
+	@echo $(patsubst say-%,%,$@)
+	@echo "----------------------------------------------------------------------"
+	mkdir -p $(BUILDDIR)/$(patsubst say-%,%,$@)
 
-./build/GraphLoader.o: ./src/GraphLoader.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+all: $(GRAPHLIB) $(PROGBINFILES)
 
-./build/Graph_ErdosRenyi.o: ./src/Graph_ErdosRenyi.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
+$(GRAPHLIB): say-graphlib $(OBJFILES)
+	$(AR) rvs $(GRAPHLIB) $(filter %.o,$^)
 
-./build/CliqueEnumeration.o: ./src/CliqueEnumeration.cpp ./build
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-./build:
-	mkdir -p ./build
+$(OBJFILES): $$(patsubst $$(BUILDDIR)/%.o,$$(SRCDIR)/%.cpp,$$@)
+	$(CXX) $(CXXFLAGS) -c $^ -o $@
 
 clean:
-	rm -rf ./build
-	rm -rf ./lib/*.a
+	rm -rf $(BUILDDIR)
+
+cleanall: clean
+	rm -rf $(LIBDIR)
+	rm -rf $(BINDIR)
+
+-include $(MAKEFILES)
