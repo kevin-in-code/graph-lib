@@ -20,10 +20,8 @@ $$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp
 	$$(CXX) $$(CXXFLAGS) -c $$^ -o $$@
 endef
 
-PROGMAKEFILES=$(wildcard $(PROGDIR)/*/Makefile.inc)
-
 MAKEFILES=$(patsubst %,$(PROGDIR)/%/Makefile.inc,$(sort $(notdir $(patsubst %/,%,$(wildcard $(PROGDIR)/*)))))
-PROGNAMES=$(sort $(notdir $(patsubst %/,%,$(dir $(PROGMAKEFILES)))))
+PROGNAMES=$(sort $(notdir $(patsubst %/,%,$(dir $(MAKEFILES)))))
 PROGBINFILES=$(addprefix $(BINDIR)/,$(PROGNAMES))
 SAYPROGNAMES=$(patsubst %,say-%,$(PROGNAMES))
 
@@ -32,6 +30,8 @@ OBJFILES=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(CPPFILES))
 
 .SECONDEXPANSION:
 .PHONY: clean cleanall say-graphlib $(SAYPROGNAMES)
+
+all: $(GRAPHLIB) $(PROGBINFILES)
 
 $(MAKEFILES): | Makefile
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >$@
@@ -61,8 +61,6 @@ $(SAYPROGNAMES): $(BINDIR)
 	@echo $(patsubst say-%,%,$@)
 	@echo "----------------------------------------------------------------------"
 	mkdir -p $(BUILDDIR)/$(patsubst say-%,%,$@)
-
-all: $(GRAPHLIB) $(PROGBINFILES)
 
 $(GRAPHLIB): say-graphlib $(OBJFILES)
 	$(AR) rvs $(GRAPHLIB) $(filter %.o,$^)
