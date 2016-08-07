@@ -10,7 +10,7 @@
 #include <iostream>
 #include <string>
 
-using namespace kn;
+// using namespace kn;
 
 int main(int argc, const char* argv[])
 {
