@@ -17,6 +17,7 @@
 #include <assert.h>
 #include <ArrayView.hpp>
 #include <BitStructures.hpp>
+#include <Matrix.hpp>
 
 namespace kn
 {
@@ -45,7 +46,6 @@ namespace kn
 
         std::size_t rows, columns;
 
-        ArrayView<ArrayView<T> > costs;
         ArrayView<ArrayView<T> > matrix;
 
         ArrayView<std::size_t> chain;
@@ -60,12 +60,14 @@ namespace kn
 
         ArrayView<Matching<T> > mapping;
 
-        void prepare();
+        void prepare(const Matrix<T>& costs);
         void engageNext(std::size_t pi, std::size_t pj);
         bool findUncoveredZero(std::size_t& pi, std::size_t& pj);
         T findSmallestUncovered();
         void doNext();
-        void extractMapping();
+        void extractMapping(const Matrix<T>& costs);
+        void defineProblem(std::size_t m, std::size_t n, bool maximise);
+
 
     public:
         MatchingOptimiser() : MatchingOptimiser(50) {}
@@ -77,10 +79,9 @@ namespace kn
 
         void reallocate(std::size_t estDim1, std::size_t estDim2);
 
-        const ArrayView<ArrayView<T> >& defineProblem(std::size_t m, std::size_t n, bool maximise);
-        void clearCosts(T defaultCost = Zero);
+        const ArrayView<Matching<T> >& solve(const Matrix<T>& costs, bool maximise);
 
-        const ArrayView<Matching<T> >& solve(T& sum, bool excludeNegatives);
+        static T sumMatching(ArrayView<Matching<T> >& matching, bool excludeNegatives);
     };
 
     template<typename T>
@@ -90,8 +91,8 @@ namespace kn
         minorDim = std::min(estDim1, estDim2);
         majorDim = std::max(estDim1, estDim2);
 
-        arrayTs = new ArrayView<T>[majorDim * 2];
-        arrayT = new T[majorDim * minorDim * 2];
+        arrayTs = new ArrayView<T>[majorDim];
+        arrayT = new T[majorDim * minorDim];
         arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
         arrayMatching = new Matching<T>[minorDim];
     }
@@ -122,14 +123,14 @@ namespace kn
             majorDim = newMajorDim;
 
             arrayTs = new ArrayView<T>[majorDim];
-            arrayT = new T[majorDim * minorDim * 2];
+            arrayT = new T[majorDim * minorDim];
             arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
             arrayMatching = new Matching<T>[minorDim];
         }
     }
 
     template<typename T>
-    const ArrayView<ArrayView<T> >& MatchingOptimiser<T>::defineProblem(std::size_t m, std::size_t n, bool maximise)
+    void MatchingOptimiser<T>::defineProblem(std::size_t m, std::size_t n, bool maximise)
     {
         this->maximise = maximise;
         transposed = (m > n);
@@ -138,42 +139,21 @@ namespace kn
 
         if ((rows > minorDim) || (columns > majorDim)) reallocate(rows, columns);
 
-        costs = ArrayView<ArrayView<T> >(arrayTs, m);
-        matrix = ArrayView<ArrayView<T> >(arrayTs + m, rows);
+        matrix = ArrayView<ArrayView<T> >(arrayTs, rows);
         chain = ArrayView<std::size_t>(arraySizeT, rows * 2 + 1);
         rowStars = ArrayView<std::size_t>(arraySizeT + rows * 2 + 1, rows);
         rowPrimes = ArrayView<std::size_t>(arraySizeT + rows * 3 + 1, rows);
         columnStars = ArrayView<std::size_t>(arraySizeT + rows * 4 + 1, columns);
         mapping = ArrayView<Matching<T> >(arrayMatching, rows);
 
-        for (std::size_t mi = 0; mi < m; mi++)
-        {
-            costs[mi] = ArrayView<T>(arrayT + mi * n, n);
-        }
-
         for (std::size_t ri = 0; ri < rows; ri++)
         {
-            matrix[ri] = ArrayView<T>((arrayT + m * n) + ri * columns, columns);
-        }
-
-        return costs;
-    }
-
-    template<typename T>
-    void MatchingOptimiser<T>::clearCosts(T defaultCost)
-    {
-        for (std::size_t i = 0; i < costs.size(); i++)
-        {
-            ArrayView<T> row = costs[i];
-            for (std::size_t j = 0; j < row.size(); j++)
-            {
-                row[j] = defaultCost;
-            }
+            matrix[ri] = ArrayView<T>(arrayT + ri * columns, columns);
         }
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::prepare()
+    void MatchingOptimiser<T>::prepare(const Matrix<T>& costs)
     {
         if (transposed)
         {
@@ -181,25 +161,29 @@ namespace kn
             {
                 for (std::size_t v = 0; v < columns; v++)
                 {
-                    matrix[u][v] = costs[v][u];
+                    matrix[u][v] = costs.getValue(v, u);
                 }
             }
         }
         else
         {
-            for (std::size_t u = 0; u < rows; u++)
+            for (std::size_t u = 0; u < rows-1; u++)
             {
                 for (std::size_t v = 0; v < columns; v++)
                 {
-                    matrix[u][v] = costs[u][v];
+                    matrix[u][v] = costs.getValue(u, v);
                 }
+            }
+            for (std::size_t v = 0; v < columns; v++)
+            {
+                matrix[4][v] = costs.getValue(4, v);
             }
         }
 
 
         if (maximise)
         {
-            double big = costs[0][0];
+            double big = matrix[0][0];
             for (std::size_t u = 0; u < rows; u++)
             {
                 for (std::size_t v = 0; v < columns; v++)
@@ -438,7 +422,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::extractMapping()
+    void MatchingOptimiser<T>::extractMapping(const Matrix<T>& costs)
     {
         for (std::size_t i = 0; i < rows; i++)
         {
@@ -449,47 +433,53 @@ namespace kn
             {
                 mapping[i].u = j;
                 mapping[i].v = i;
-                mapping[i].score = costs[j][i];
+                mapping[i].score = costs.getValue(j, i);
             }
             else
             {
                 mapping[i].u = i;
                 mapping[i].v = j;
-                mapping[i].score = costs[i][j];
+                mapping[i].score = costs.getValue(i, j);
             }
         }
     }
 
     template<typename T>
-    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(T& sum, bool excludeNegatives)
+    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(const Matrix<T>& costs, bool maximise)
     {
-        prepare();
+        defineProblem(costs.countRows(), costs.countColumns(), maximise);
+        prepare(costs);
         while (numColumnsCovered < rows)
         {
             doNext();
         }
-        extractMapping();
+        extractMapping(costs);
+        return mapping;
+    }
 
+    template<typename T>
+    T MatchingOptimiser<T>::sumMatching(ArrayView<Matching<T> >& matching, bool excludeNegatives)
+    {
         double localSum = 0.0;
         if (excludeNegatives)
         {
-            for (std::size_t i = 0; i < rows; i++)
+            for (std::size_t i = 0; i < matching.size(); i++)
             {
-                if (mapping[i].score >= 0.0)
+                if (matching[i].score >= 0.0)
                 {
-                    localSum += mapping[i].score;
+                    localSum += matching[i].score;
                 }
             }
         }
         else
         {
-            for (std::size_t i = 0; i < rows; i++)
+            for (std::size_t i = 0; i < matching.size(); i++)
             {
-                localSum += mapping[i].score;
+                localSum += matching[i].score;
             }
         }
-        sum = localSum;
-        return mapping;
+        return localSum;
     }
+
 
 }

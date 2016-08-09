@@ -37,7 +37,7 @@ namespace kn
     public:
         ArrayView() : ArrayView(nullptr, 0, 1) {}
 
-        ArrayView(T* values, std::size_t length) : ArrayView(values, length, 1) {}
+        ArrayView(T* values, std::size_t length) : ArrayView(values, length, 0) {}
 
         ArrayView(T* values, std::size_t length, std::size_t shift)
         {
