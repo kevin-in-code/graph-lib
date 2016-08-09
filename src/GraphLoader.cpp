@@ -7,6 +7,7 @@
 #include <limits>
 #include <vector>
 #include <unordered_map>
+#include <cctype>
 
 
 namespace kn
@@ -137,6 +138,141 @@ namespace kn
         }
 
         return g;
+    }
+
+    Graph* GraphLoader::loadAttributedDIMACS()
+    {
+        Graph* g = new Graph();
+
+        std::string line;
+        std::size_t numVertices = 0;
+        while (std::getline(stream, line))
+        {
+            std::stringstream lstream(line);
+
+            std::string key = "";
+            lstream >> key;
+
+            if (key != "")
+            {
+                if (key == "v")
+                {
+                    std::size_t attr;
+                    lstream >> attr;
+                    if (!lstream) attr = 0;
+
+                    g->addVertex(attr);
+                    numVertices++;
+                }
+                else
+                if (key == "e")
+                {
+                    std::size_t source, dest;
+                    std::size_t attr;
+                    lstream >> source;
+                    lstream >> dest;
+                    lstream >> attr;
+                    if (!lstream) attr = 0;
+                    source--;
+                    dest--;
+                    while (source >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    while (dest >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    if (!g->hasEdge(source, dest))
+                    {
+                        g->addEdge(source, dest, attr);
+                    }
+                }
+            }
+            else
+                break;
+        }
+
+        return g;
+    }
+
+    Graph* GraphLoader::loadLinearDIMACS(const std::string dimacs)
+    {
+        Graph* g = new Graph();
+
+        std::size_t numVertices = 0;
+        std::stringstream lstream(dimacs);
+
+        std::string key = "";
+        while (lstream)
+        {
+            key = "";
+            lstream >> key;
+
+            if (key != "")
+            {
+                if (key == "v")
+                {
+                    std::size_t attr;
+                    lstream >> attr;
+                    if (!lstream) attr = 0;
+
+                    g->addVertex(attr);
+                    numVertices++;
+                }
+                else
+                if (key == "e")
+                {
+                    std::size_t source, dest;
+                    std::size_t attr = 0;
+                    lstream >> source;
+                    lstream >> dest;
+                    lstream >> std::ws;
+                    if (std::isdigit(lstream.peek())) lstream >> attr;
+                    source--;
+                    dest--;
+                    while (source >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    while (dest >= numVertices)
+                    {
+                        g->addVertex(0);
+                        numVertices++;
+                    }
+                    if (!g->hasEdge(source, dest))
+                    {
+                        g->addEdge(source, dest, attr);
+                    }
+                }
+                else
+                    break;
+            }
+        }
+
+        return g;
+    }
+
+    std::vector<Graph*> GraphLoader::loadLinearDIMACS()
+    {
+        std::vector<Graph*> graphs;
+
+        std::string line;
+        while (std::getline(stream, line))
+        {
+            std::stringstream lstream(line);
+            lstream >> std::ws;
+            if (lstream)
+            {
+                Graph* g = GraphLoader::loadLinearDIMACS(line);
+                graphs.push_back(g);
+            }
+        }
+
+        return graphs;
     }
 }
 

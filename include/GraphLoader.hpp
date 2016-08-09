@@ -20,13 +20,26 @@ namespace kn
     {
     private:
         std::ifstream stream;
-        char buffer[4096];
+        char* buffer;
+
+        static constexpr std::size_t BufferSize = 4096;
 
     public:
         GraphLoader(const std::string& filename)
         {
-            stream.rdbuf()->pubsetbuf(buffer, sizeof(buffer));
+            /**
+                NB: Certain versions of g++ fail if the buffer passed into pubsetbuf
+                    is part of the same memory allocation.  Thus buffer is allocated
+                    separately here.
+            */
+            this->buffer = new char[BufferSize];
+            stream.rdbuf()->pubsetbuf(buffer, BufferSize);
             stream.open(filename);
+        }
+
+        ~GraphLoader()
+        {
+            delete[] this->buffer;
         }
 
         bool isOpen() const
@@ -39,6 +52,12 @@ namespace kn
         Graph* loadAdjacencyList(char delim, bool directed);
 
         Graph* loadDIMACS();
+
+        Graph* loadAttributedDIMACS();
+
+        static Graph* loadLinearDIMACS(const std::string dimacs);
+
+        std::vector<Graph*> loadLinearDIMACS();
     };
 
 }
