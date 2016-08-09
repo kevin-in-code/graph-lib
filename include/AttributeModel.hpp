@@ -29,7 +29,13 @@ namespace kn
 
         virtual int relation(std::size_t idA, std::size_t idB) const
         {
-            return 0;
+            if (idA == idB)
+                return 0;
+            else
+            if (idA < idB)
+                return -1;
+            else
+                return +1;
         }
 
         virtual double similarity(std::size_t idA, std::size_t idB) const
