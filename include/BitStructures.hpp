@@ -12,7 +12,7 @@
 #include <algorithm>
 #include <cstdint>
 #include <cstdlib>
-#include <assert.h>
+#include <cassert>
 
 namespace kn
 {
