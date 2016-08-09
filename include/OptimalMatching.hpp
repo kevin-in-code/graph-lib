@@ -15,7 +15,7 @@
 #include <algorithm>
 #include <memory>
 #include <assert.h>
-#include <View.hpp>
+#include <ArrayView.hpp>
 #include <BitStructures.hpp>
 
 namespace kn
@@ -24,7 +24,7 @@ namespace kn
     template <typename T>
     struct Matching
     {
-        size_t u, v;
+        std::size_t u, v;
         T score;
     };
 
@@ -33,66 +33,66 @@ namespace kn
     {
     public:
         static constexpr T Zero = 0;
-        static constexpr size_t Unused = ~0;
+        static constexpr std::size_t Unused = ~0;
 
     private:
-        size_t majorDim, minorDim;
+        std::size_t majorDim, minorDim;
 
-        View<T>* arrayTs;
+        ArrayView<T>* arrayTs;
         T* arrayT;
-        size_t* arraySizeT;
+        std::size_t* arraySizeT;
         Matching<T>* arrayMatching;
 
-        size_t rows, columns;
+        std::size_t rows, columns;
 
-        View<View<T> > costs;
-        View<View<T> > matrix;
+        ArrayView<ArrayView<T> > costs;
+        ArrayView<ArrayView<T> > matrix;
 
-        View<size_t> chain;
-        View<size_t> columnStars, rowStars, rowPrimes;
+        ArrayView<std::size_t> chain;
+        ArrayView<std::size_t> columnStars, rowStars, rowPrimes;
 
         IntegerSet rowsCovered, columnsCovered, rowPrimesTouched;
 
-        size_t numColumnStars, numRowStars, numRowPrimes;
-        size_t chainLen, numColumnsCovered;
+        std::size_t numColumnStars, numRowStars, numRowPrimes;
+        std::size_t chainLen, numColumnsCovered;
 
         bool transposed, maximise;
 
-        View<Matching<T> > mapping;
+        ArrayView<Matching<T> > mapping;
 
-        void Prepare();
-        void EngageNext(size_t pi, size_t pj);
-        bool FindUncoveredZero(size_t& pi, size_t& pj);
-        T FindSmallestUncovered();
-        void DoNext();
-        void ExtractMapping();
+        void prepare();
+        void engageNext(std::size_t pi, std::size_t pj);
+        bool findUncoveredZero(std::size_t& pi, std::size_t& pj);
+        T findSmallestUncovered();
+        void doNext();
+        void extractMapping();
 
     public:
         MatchingOptimiser() : MatchingOptimiser(50) {}
-        MatchingOptimiser(size_t estDim) : MatchingOptimiser(estDim, estDim) {}
+        MatchingOptimiser(std::size_t estDim) : MatchingOptimiser(estDim, estDim) {}
 
-        MatchingOptimiser(size_t estDim1, size_t estDim2);
+        MatchingOptimiser(std::size_t estDim1, std::size_t estDim2);
 
         ~MatchingOptimiser();
 
-        void Reallocate(size_t estDim1, size_t estDim2);
+        void reallocate(std::size_t estDim1, std::size_t estDim2);
 
-        const View<View<T> >& DefineProblem(size_t m, size_t n, bool maximise);
-        void ClearCosts(T defaultCost = Zero);
+        const ArrayView<ArrayView<T> >& defineProblem(std::size_t m, std::size_t n, bool maximise);
+        void clearCosts(T defaultCost = Zero);
 
-        const View<Matching<T> >& Solve(T& sum);
+        const ArrayView<Matching<T> >& solve(T& sum);
     };
 
     template<typename T>
-    MatchingOptimiser<T>::MatchingOptimiser(size_t estDim1, size_t estDim2)
+    MatchingOptimiser<T>::MatchingOptimiser(std::size_t estDim1, std::size_t estDim2)
     	: rowsCovered(std::min(estDim1, estDim2)), columnsCovered(std::max(estDim1, estDim2)), rowPrimesTouched(std::min(estDim1, estDim2))
     {
         minorDim = std::min(estDim1, estDim2);
         majorDim = std::max(estDim1, estDim2);
 
-        arrayTs = new View<T>[majorDim * 2];
+        arrayTs = new ArrayView<T>[majorDim * 2];
         arrayT = new T[majorDim * minorDim * 2];
-        arraySizeT = new size_t[majorDim + minorDim * 4 + 1];
+        arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
         arrayMatching = new Matching<T>[minorDim];
     }
 
@@ -106,10 +106,10 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::Reallocate(size_t estDim1, size_t estDim2)
+    void MatchingOptimiser<T>::reallocate(std::size_t estDim1, std::size_t estDim2)
     {
-        size_t newMinorDim = std::min(estDim1, estDim2);
-        size_t newMajorDim = std::max(estDim1, estDim2);
+        std::size_t newMinorDim = std::min(estDim1, estDim2);
+        std::size_t newMajorDim = std::max(estDim1, estDim2);
 
         if ((minorDim != newMinorDim) || (majorDim != newMajorDim))
         {
@@ -121,51 +121,51 @@ namespace kn
             minorDim = newMinorDim;
             majorDim = newMajorDim;
 
-            arrayTs = new View<T>[majorDim];
+            arrayTs = new ArrayView<T>[majorDim];
             arrayT = new T[majorDim * minorDim * 2];
-            arraySizeT = new size_t[majorDim + minorDim * 4 + 1];
+            arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
             arrayMatching = new Matching<T>[minorDim];
         }
     }
 
     template<typename T>
-    const View<View<T> >& MatchingOptimiser<T>::DefineProblem(size_t m, size_t n, bool maximise)
+    const ArrayView<ArrayView<T> >& MatchingOptimiser<T>::defineProblem(std::size_t m, std::size_t n, bool maximise)
     {
         this->maximise = maximise;
         transposed = (m > n);
         rows = std::min(m, n);
         columns = std::max(m, n);
 
-        if ((rows > minorDim) || (columns > majorDim)) Reallocate(rows, columns);
+        if ((rows > minorDim) || (columns > majorDim)) reallocate(rows, columns);
 
-        costs = View<View<T> >(arrayTs, m);
-        matrix = View<View<T> >(arrayTs + m, rows);
-        chain = View<size_t>(arraySizeT, rows * 2 + 1);
-        rowStars = View<size_t>(arraySizeT + rows * 2 + 1, rows);
-        rowPrimes = View<size_t>(arraySizeT + rows * 3 + 1, rows);
-        columnStars = View<size_t>(arraySizeT + rows * 4 + 1, columns);
-        mapping = View<Matching<T> >(arrayMatching, rows);
+        costs = ArrayView<ArrayView<T> >(arrayTs, m);
+        matrix = ArrayView<ArrayView<T> >(arrayTs + m, rows);
+        chain = ArrayView<std::size_t>(arraySizeT, rows * 2 + 1);
+        rowStars = ArrayView<std::size_t>(arraySizeT + rows * 2 + 1, rows);
+        rowPrimes = ArrayView<std::size_t>(arraySizeT + rows * 3 + 1, rows);
+        columnStars = ArrayView<std::size_t>(arraySizeT + rows * 4 + 1, columns);
+        mapping = ArrayView<Matching<T> >(arrayMatching, rows);
 
-        for (size_t mi = 0; mi < m; mi++)
+        for (std::size_t mi = 0; mi < m; mi++)
         {
-            costs[mi] = View<T>(arrayT + mi * n, n);
+            costs[mi] = ArrayView<T>(arrayT + mi * n, n);
         }
 
-        for (size_t ri = 0; ri < rows; ri++)
+        for (std::size_t ri = 0; ri < rows; ri++)
         {
-            matrix[ri] = View<T>((arrayT + m * n) + ri * columns, columns);
+            matrix[ri] = ArrayView<T>((arrayT + m * n) + ri * columns, columns);
         }
 
         return costs;
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::ClearCosts(T defaultCost)
+    void MatchingOptimiser<T>::clearCosts(T defaultCost)
     {
-        for (size_t i = 0; i < costs.size(); i++)
+        for (std::size_t i = 0; i < costs.size(); i++)
         {
-            View<T> row = costs[i];
-            for (size_t j = 0; j < row.size(); j++)
+            ArrayView<T> row = costs[i];
+            for (std::size_t j = 0; j < row.size(); j++)
             {
                 row[j] = defaultCost;
             }
@@ -173,13 +173,13 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::Prepare()
+    void MatchingOptimiser<T>::prepare()
     {
         if (transposed)
         {
-            for (size_t u = 0; u < rows; u++)
+            for (std::size_t u = 0; u < rows; u++)
             {
-                for (size_t v = 0; v < columns; v++)
+                for (std::size_t v = 0; v < columns; v++)
                 {
                     matrix[u][v] = costs[v][u];
                 }
@@ -187,9 +187,9 @@ namespace kn
         }
         else
         {
-            for (size_t u = 0; u < rows; u++)
+            for (std::size_t u = 0; u < rows; u++)
             {
-                for (size_t v = 0; v < columns; v++)
+                for (std::size_t v = 0; v < columns; v++)
                 {
                     matrix[u][v] = costs[u][v];
                 }
@@ -200,23 +200,23 @@ namespace kn
         if (maximise)
         {
             double big = costs[0][0];
-            for (size_t u = 0; u < rows; u++)
+            for (std::size_t u = 0; u < rows; u++)
             {
-                for (size_t v = 0; v < columns; v++)
+                for (std::size_t v = 0; v < columns; v++)
                 {
                     if (matrix[u][v] > big) big = matrix[u][v];
                 }
             }
-            for (size_t u = 0; u < rows; u++)
+            for (std::size_t u = 0; u < rows; u++)
             {
-                for (size_t v = 0; v < columns; v++)
+                for (std::size_t v = 0; v < columns; v++)
                 {
                     matrix[u][v] = big - matrix[u][v];
                 }
             }
         }
 
-        for (size_t t = 0; t < mapping.size(); t++)
+        for (std::size_t t = 0; t < mapping.size(); t++)
         {
             mapping[t].u = Unused;
             mapping[t].v = Unused;
@@ -225,12 +225,12 @@ namespace kn
         chainLen = 0;
         numColumnsCovered = 0;
 
-        for (size_t t = 0; t < rows; t++)
+        for (std::size_t t = 0; t < rows; t++)
         {
             rowStars[t] = Unused;
             rowPrimes[t] = Unused;
         }
-        for (size_t t = 0; t < columns; t++)
+        for (std::size_t t = 0; t < columns; t++)
         {
             columnStars[t] = Unused;
         }
@@ -245,7 +245,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::EngageNext(size_t pi, size_t pj)
+    void MatchingOptimiser<T>::engageNext(std::size_t pi, std::size_t pj)
     {
         // InitChain(pi, pj);
         chain[0] = pi;
@@ -260,8 +260,8 @@ namespace kn
             if (columnStars[pj] != Unused)
             {
                 // the starred zero being displaced is ...
-                size_t qj = pj;
-                size_t qi = columnStars[qj];
+                std::size_t qj = pj;
+                std::size_t qi = columnStars[qj];
 
                 // AddStarChain(qi);
                 chain[chainLen++] = qi;
@@ -272,8 +272,8 @@ namespace kn
                 if (!rowPrimesTouched.contains(qi))
                 {
                     // the next primed zero in the chain is ...
-                    size_t ri = qi;
-                    size_t rj = rowPrimes[ri];
+                    std::size_t ri = qi;
+                    std::size_t rj = rowPrimes[ri];
 
                     // AddPrimeChain(rj);
                     chain[chainLen++] = rj;
@@ -292,22 +292,22 @@ namespace kn
         }
 
         // RemoveChainStars();
-        for (size_t c = 1; (c + 1) < chainLen; c += 2)
+        for (std::size_t c = 1; (c + 1) < chainLen; c += 2)
         {
             // RemoveStar(chain[c + 1], chain[c]);
-            size_t col = chain[c];
-            size_t row = chain[c + 1];
+            std::size_t col = chain[c];
+            std::size_t row = chain[c + 1];
 
             if (columnStars[col] != Unused) { columnStars[col] = Unused; numColumnStars--; }
             if (rowStars[row] != Unused) { rowStars[row] = Unused; numRowStars--; }
         }
 
         // ResolveChainPrimes();
-        for (size_t c = 0; (c + 1) < chainLen; c += 2)
+        for (std::size_t c = 0; (c + 1) < chainLen; c += 2)
         {
             // AddStar(chain[c], target);
-            size_t row = chain[c];
-            size_t col = chain[c + 1];
+            std::size_t row = chain[c];
+            std::size_t col = chain[c + 1];
 
             if (columnStars[col] == Unused) numColumnStars++;
             columnStars[col] = row;
@@ -323,13 +323,13 @@ namespace kn
         rowsCovered.clear();
         rowPrimesTouched.clear();
         numRowPrimes = 0;
-        for (size_t c = 0; c < rows; c++)
+        for (std::size_t c = 0; c < rows; c++)
         {
             rowPrimes[c] = Unused;
         }
 
         // VerifyStars();
-        for (size_t c = 0; c < columns; c++)
+        for (std::size_t c = 0; c < columns; c++)
         {
             if ((columnStars[c] != Unused) && !columnsCovered.contains(c))
             {
@@ -341,13 +341,13 @@ namespace kn
     }
 
     template<typename T>
-    bool MatchingOptimiser<T>::FindUncoveredZero(size_t& pi, size_t& pj)
+    bool MatchingOptimiser<T>::findUncoveredZero(std::size_t& pi, std::size_t& pj)
     {
-        for (size_t i = 0; i < rows; i++)
+        for (std::size_t i = 0; i < rows; i++)
         {
             if (rowsCovered.contains(i)) continue;
 
-            for (size_t j = 0; j < columns; j++)
+            for (std::size_t j = 0; j < columns; j++)
             {
                 if (columnsCovered.contains(j)) continue;
 
@@ -364,15 +364,15 @@ namespace kn
     }
 
     template<typename T>
-    T MatchingOptimiser<T>::FindSmallestUncovered()
+    T MatchingOptimiser<T>::findSmallestUncovered()
     {
         T smallest = matrix[0][0];
 
-        for (size_t i = 0; i < rows; i++)
+        for (std::size_t i = 0; i < rows; i++)
         {
             if (rowsCovered.contains(i)) continue;
 
-            for (size_t j = 0; j < columns; j++)
+            for (std::size_t j = 0; j < columns; j++)
             {
                 if (columnsCovered.contains(j)) continue;
 
@@ -384,12 +384,12 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::DoNext()
+    void MatchingOptimiser<T>::doNext()
     {
         for (;;)
         {
-            size_t pi, pj;
-            if (FindUncoveredZero(pi, pj)) // populates pi and pj
+            std::size_t pi, pj;
+            if (findUncoveredZero(pi, pj)) // populates pi and pj
             {
                 // AddPrime(pi, pj);
                 numRowPrimes++;
@@ -397,7 +397,7 @@ namespace kn
 
                 if (rowStars[pi] != Unused)
                 {
-                    size_t j = rowStars[pi];
+                    std::size_t j = rowStars[pi];
                     // UncoverColumn(j);
                     numColumnsCovered--;
                     columnsCovered.remove(j);
@@ -407,28 +407,28 @@ namespace kn
                 else
                 {
                     // We've primed a zero in a starless row.
-                    EngageNext(pi, pj);
+                    engageNext(pi, pj);
                     return;
                 }
             }
             else
             {
                 // There were no uncovered zeros, so they must be created.
-                T smallest = FindSmallestUncovered();
-                for (size_t j = 0; j < columns; j++)
+                T smallest = findSmallestUncovered();
+                for (std::size_t j = 0; j < columns; j++)
                 {
                     if (columnsCovered.contains(j)) continue;
 
-                    for (size_t i = 0; i < rows; i++)
+                    for (std::size_t i = 0; i < rows; i++)
                     {
                         matrix[i][j] -= smallest;
                     }
                 }
-                for (size_t i = 0; i < rows; i++)
+                for (std::size_t i = 0; i < rows; i++)
                 {
                     if (!rowsCovered.contains(i)) continue;
 
-                    for (size_t j = 0; j < columns; j++)
+                    for (std::size_t j = 0; j < columns; j++)
                     {
                         matrix[i][j] += smallest;
                     }
@@ -438,11 +438,11 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::ExtractMapping()
+    void MatchingOptimiser<T>::extractMapping()
     {
-        for (size_t i = 0; i < rows; i++)
+        for (std::size_t i = 0; i < rows; i++)
         {
-            size_t j = rowStars[i];
+            std::size_t j = rowStars[i];
 
             // RecordResult(i, j);
             if (transposed)
@@ -461,17 +461,17 @@ namespace kn
     }
 
     template<typename T>
-    const View<Matching<T> >& MatchingOptimiser<T>::Solve(T& sum)
+    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(T& sum)
     {
-        Prepare();
+        prepare();
         while (numColumnsCovered < rows)
         {
-            DoNext();
+            doNext();
         }
-        ExtractMapping();
+        extractMapping();
 
         double localSum = 0.0;
-        for (size_t i = 0; i < rows; i++)
+        for (std::size_t i = 0; i < rows; i++)
         {
             localSum += mapping[i].score;
         }
