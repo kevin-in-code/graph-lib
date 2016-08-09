@@ -46,4 +46,7 @@ How to build with GCC
 
 1. make
 
+Makefile defaults to a release build.  Use "make debug" for a debug build.
+
+
 

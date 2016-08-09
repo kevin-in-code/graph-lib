@@ -6,7 +6,8 @@ BINDIR      := bin
 PROGDIR     := programs
 
 CXX=g++
-CXXFLAGS=-std=c++11 -W -Wextra -pedantic -O3 -I$(INCDIR) -L$(LIBDIR)
+CXXFLAGS=-std=c++11 -W -Wextra -pedantic -I$(INCDIR) -L$(LIBDIR)
+CXXBUILD=-O3 -DNDEBUG
 AR=ar
 
 GRAPHLIB=$(LIBDIR)/libgraphlib.a
@@ -34,13 +35,19 @@ HEADERS=$(wildcard $(INCDIR)/*.hpp) $(wildcard $(INCDIR)/*.h) $(wildcard $(SRCDI
 
 all: $(GRAPHLIB) $(PROGBINFILES)
 
+debug: CXXBUILD=-DDEBUG -gdwarf -g3
+debug: all
+
+release: CXXBUILD=-O3 -DNDEBUG
+release: all
+
 $(MAKEFILES): | Makefile
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$$(wildcard $$(PROGDIR)/$T/*.cpp))';) ) >>$@
-	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXBUILD) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp $$(wildcard $$(PROGDIR)/$T/*.hpp) $$(wildcard $$(PROGDIR)/$T/*.h)';) ) >>$@
-	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -c $$(filter %.cpp,$$^) -o $$@';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXBUILD) $$(CXXFLAGS) -c $$(filter %.cpp,$$^) -o $$@';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
 
 $(BUILDDIR):
@@ -67,7 +74,7 @@ $(GRAPHLIB): say-graphlib $(OBJFILES)
 	$(AR) rvs $(GRAPHLIB) $(filter %.o,$^)
 
 $(OBJFILES): $$(patsubst $$(BUILDDIR)/%.o,$$(SRCDIR)/%.cpp,$$@) $(HEADERS)
-	$(CXX) $(CXXFLAGS) -c $(filter %.cpp,$^) -o $@
+	$(CXX) $(CXXBUILD) $(CXXFLAGS) -c $(filter %.cpp,$^) -o $@
 
 clean:
 	rm -rf $(BUILDDIR)
