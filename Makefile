@@ -13,11 +13,11 @@ GRAPHLIB=$(LIBDIR)/libgraphlib.a
 GRAPHLIBLINK=graphlib
 
 define DEFAULT_MAKEFILE_INC
-$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$(wildcard $(PROGDIR)/$T/*.cpp))
+$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$$(wildcard $$(PROGDIR)/$T/*.cpp))
 	$$(CXX) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)
 
-$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp
-	$$(CXX) $$(CXXFLAGS) -c $$^ -o $$@
+$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp $$(wildcard $$(PROGDIR)/$T/*.hpp) $$(wildcard $$(PROGDIR)/$T/*.h)
+	$$(CXX) $$(CXXFLAGS) -c $$(filter %.cpp,$$^) -o $$@
 endef
 
 MAKEFILES=$(patsubst %,$(PROGDIR)/%/Makefile.inc,$(sort $(notdir $(patsubst %/,%,$(wildcard $(PROGDIR)/*)))))
@@ -27,6 +27,7 @@ SAYPROGNAMES=$(patsubst %,say-%,$(PROGNAMES))
 
 CPPFILES=$(wildcard $(SRCDIR)/*.cpp)
 OBJFILES=$(patsubst $(SRCDIR)/%.cpp,$(BUILDDIR)/%.o,$(CPPFILES))
+HEADERS=$(wildcard $(INCDIR)/*.hpp) $(wildcard $(INCDIR)/*.h) $(wildcard $(SRCDIR)/*.hpp) $(wildcard $(SRCDIR)/*.h)
 
 .SECONDEXPANSION:
 .PHONY: clean cleanall say-graphlib $(SAYPROGNAMES)
@@ -35,11 +36,11 @@ all: $(GRAPHLIB) $(PROGBINFILES)
 
 $(MAKEFILES): | Makefile
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >$@
-	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$(wildcard $(PROGDIR)/$T/*.cpp))';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BINDIR)/$T: $$$$(GRAPHLIB) say-$T $$$$(BUILDDIR)/$T/main.o $$$$(patsubst $$$$(PROGDIR)/$T/%.cpp,$$$$(BUILDDIR)/$T/%.o,$$(wildcard $$(PROGDIR)/$T/*.cpp))';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -o $$@ $$(filter %.o,$$^) $$(filter %.a,$$^)';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
-	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp';) ) >>$@
-	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -c $$^ -o $$@';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '$$(BUILDDIR)/$T/%.o: $$$$(PROGDIR)/$T/%.cpp $$(wildcard $$(PROGDIR)/$T/*.hpp) $$(wildcard $$(PROGDIR)/$T/*.h)';) ) >>$@
+	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo -e '\t$$(CXX) $$(CXXFLAGS) -c $$(filter %.cpp,$$^) -o $$@';) ) >>$@
 	@( $(foreach T,$(patsubst $(PROGDIR)/%/Makefile.inc,%,$@),echo '';) ) >>$@
 
 $(BUILDDIR):
@@ -65,8 +66,8 @@ $(SAYPROGNAMES): $(BINDIR)
 $(GRAPHLIB): say-graphlib $(OBJFILES)
 	$(AR) rvs $(GRAPHLIB) $(filter %.o,$^)
 
-$(OBJFILES): $$(patsubst $$(BUILDDIR)/%.o,$$(SRCDIR)/%.cpp,$$@)
-	$(CXX) $(CXXFLAGS) -c $^ -o $@
+$(OBJFILES): $$(patsubst $$(BUILDDIR)/%.o,$$(SRCDIR)/%.cpp,$$@) $(HEADERS)
+	$(CXX) $(CXXFLAGS) -c $(filter %.cpp,$^) -o $@
 
 clean:
 	rm -rf $(BUILDDIR)
