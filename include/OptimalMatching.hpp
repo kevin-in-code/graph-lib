@@ -80,7 +80,7 @@ namespace kn
         const ArrayView<ArrayView<T> >& defineProblem(std::size_t m, std::size_t n, bool maximise);
         void clearCosts(T defaultCost = Zero);
 
-        const ArrayView<Matching<T> >& solve(T& sum);
+        const ArrayView<Matching<T> >& solve(T& sum, bool excludeNegatives);
     };
 
     template<typename T>
@@ -461,7 +461,7 @@ namespace kn
     }
 
     template<typename T>
-    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(T& sum)
+    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(T& sum, bool excludeNegatives)
     {
         prepare();
         while (numColumnsCovered < rows)
@@ -471,9 +471,22 @@ namespace kn
         extractMapping();
 
         double localSum = 0.0;
-        for (std::size_t i = 0; i < rows; i++)
+        if (excludeNegatives)
         {
-            localSum += mapping[i].score;
+            for (std::size_t i = 0; i < rows; i++)
+            {
+                if (mapping[i].score >= 0.0)
+                {
+                    localSum += mapping[i].score;
+                }
+            }
+        }
+        else
+        {
+            for (std::size_t i = 0; i < rows; i++)
+            {
+                localSum += mapping[i].score;
+            }
         }
         sum = localSum;
         return mapping;
