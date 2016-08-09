@@ -29,13 +29,6 @@ The software should compile without errors, although cross-platform development
 may provide occassional surprises.  Building under Microsoft Visual Studio,
 MinGW G++, and Linux G++ should nevertheless succeed.
 
-Software Branches
------------------
-
-The master git branch will always show the latest full version, including all
-complete programs.  The library, sans programs, is found in the common branch.
-Finally, there is generally a separate branch for each program or program group.
-
 How to build with Visual Studio 2015
 ------------------------------------
 
