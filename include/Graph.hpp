@@ -187,6 +187,19 @@ namespace kn
             return true;
         }
 
+        bool getVertexByIndex(std::size_t index, Vertex& v) const
+        {
+            if (index >= vertices.size())
+            {
+                // This line prevents a spurious compiler warning.
+                v.id = v.outDegree = v.inDegree = v.attrID = 0;
+                return false;
+            }
+
+            v = vertices[index];
+            return true;
+        }
+
         bool getEdge(EdgeID id, Edge& e) const;
 
         bool getEdge(VertexID sourceID, VertexID destinationID, Edge& e) const;
