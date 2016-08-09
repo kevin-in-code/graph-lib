@@ -14,7 +14,8 @@
 
 #include <algorithm>
 #include <memory>
-#include <assert.h>
+#include <vector>
+#include <cassert>
 #include <ArrayView.hpp>
 #include <BitStructures.hpp>
 #include <Matrix.hpp>
@@ -23,10 +24,94 @@ namespace kn
 {
 
     template <typename T>
-    struct Matching
+    struct MatchingPair
     {
         std::size_t u, v;
         T score;
+    };
+
+    template <typename T>
+    class Matching
+    {
+    public:
+        std::vector<MatchingPair<T> > goodPairs, allPairs, weakPairs;
+        T sumGood, sumAll;
+
+        Matching()
+        {
+            goodPairs.clear();
+            allPairs.clear();
+            weakPairs.clear();
+            sumGood = sumAll = 0;
+        }
+
+        Matching(const ArrayView<MatchingPair<T> >& mapping)
+        {
+            for (std::size_t index = 0; index < mapping.size(); index++)
+            {
+                MatchingPair<T> pair = mapping[index];
+                allPairs.push_back(pair);
+                if (pair.score >= 0)
+                {
+                    goodPairs.push_back(pair);
+                    sumGood += pair.score;
+                }
+                else
+                {
+                    weakPairs.push_back(pair);
+                }
+                sumAll += pair.score;
+            }
+        }
+
+        Matching(const Matching<T>& mapping)
+        {
+            goodPairs = mapping.goodPairs;
+            allPairs = mapping.allPairs;
+            weakPairs = mapping.weakPairs;
+
+            sumGood = mapping.sumGood;
+            sumAll = mapping.sumAll;
+        }
+
+        Matching<T>& operator=(const ArrayView<MatchingPair<T> >& mapping)
+        {
+            goodPairs.clear();
+            allPairs.clear();
+            weakPairs.clear();
+            sumGood = sumAll = 0;
+
+            for (std::size_t index = 0; index < mapping.size(); index++)
+            {
+                MatchingPair<T> pair = mapping[index];
+                allPairs.push_back(pair);
+                if (pair.score >= 0)
+                {
+                    goodPairs.push_back(pair);
+                    sumGood += pair.score;
+                }
+                else
+                {
+                    weakPairs.push_back(pair);
+                }
+                sumAll += pair.score;
+            }
+            return *this;
+        }
+
+        Matching<T>& operator=(const Matching<T>& mapping)
+        {
+            if (this != &mapping)
+            {
+                goodPairs = mapping.goodPairs;
+                allPairs = mapping.allPairs;
+                weakPairs = mapping.weakPairs;
+
+                sumGood = mapping.sumGood;
+                sumAll = mapping.sumAll;
+            }
+            return *this;
+        }
     };
 
     template <typename T>
@@ -42,7 +127,7 @@ namespace kn
         ArrayView<T>* arrayTs;
         T* arrayT;
         std::size_t* arraySizeT;
-        Matching<T>* arrayMatching;
+        MatchingPair<T>* arrayMatching;
 
         std::size_t rows, columns;
 
@@ -58,7 +143,7 @@ namespace kn
 
         bool transposed, maximise;
 
-        ArrayView<Matching<T> > mapping;
+        ArrayView<MatchingPair<T> > mapping;
 
         void prepare(const Matrix<T>& costs);
         void engageNext(std::size_t pi, std::size_t pj);
@@ -79,9 +164,9 @@ namespace kn
 
         void reallocate(std::size_t estDim1, std::size_t estDim2);
 
-        const ArrayView<Matching<T> >& solve(const Matrix<T>& costs, bool maximise);
+        const ArrayView<MatchingPair<T> >& solve(const Matrix<T>& costs, bool maximise);
 
-        static T sumMatching(ArrayView<Matching<T> >& matching, bool excludeNegatives);
+        static T sumMatching(ArrayView<MatchingPair<T> >& matching, bool excludeNegatives);
     };
 
     template<typename T>
@@ -94,7 +179,7 @@ namespace kn
         arrayTs = new ArrayView<T>[majorDim];
         arrayT = new T[majorDim * minorDim];
         arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
-        arrayMatching = new Matching<T>[minorDim];
+        arrayMatching = new MatchingPair<T>[minorDim];
     }
 
     template<typename T>
@@ -125,7 +210,7 @@ namespace kn
             arrayTs = new ArrayView<T>[majorDim];
             arrayT = new T[majorDim * minorDim];
             arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
-            arrayMatching = new Matching<T>[minorDim];
+            arrayMatching = new MatchingPair<T>[minorDim];
         }
     }
 
@@ -144,7 +229,7 @@ namespace kn
         rowStars = ArrayView<std::size_t>(arraySizeT + rows * 2 + 1, rows);
         rowPrimes = ArrayView<std::size_t>(arraySizeT + rows * 3 + 1, rows);
         columnStars = ArrayView<std::size_t>(arraySizeT + rows * 4 + 1, columns);
-        mapping = ArrayView<Matching<T> >(arrayMatching, rows);
+        mapping = ArrayView<MatchingPair<T> >(arrayMatching, rows);
 
         for (std::size_t ri = 0; ri < rows; ri++)
         {
@@ -445,7 +530,7 @@ namespace kn
     }
 
     template<typename T>
-    const ArrayView<Matching<T> >& MatchingOptimiser<T>::solve(const Matrix<T>& costs, bool maximise)
+    const ArrayView<MatchingPair<T> >& MatchingOptimiser<T>::solve(const Matrix<T>& costs, bool maximise)
     {
         defineProblem(costs.countRows(), costs.countColumns(), maximise);
         prepare(costs);
@@ -458,7 +543,7 @@ namespace kn
     }
 
     template<typename T>
-    T MatchingOptimiser<T>::sumMatching(ArrayView<Matching<T> >& matching, bool excludeNegatives)
+    T MatchingOptimiser<T>::sumMatching(ArrayView<MatchingPair<T> >& matching, bool excludeNegatives)
     {
         double localSum = 0.0;
         if (excludeNegatives)
