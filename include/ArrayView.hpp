@@ -67,7 +67,7 @@ namespace kn
 #if defined(DEBUG) || defined(_DEBUG)
             if (index >= length) throw std::out_of_range("ArrayView index out of range");
 #endif
-            return &values[index << shift];
+            return values[index << shift];
         }
 
         T& operator[](std::size_t index)
