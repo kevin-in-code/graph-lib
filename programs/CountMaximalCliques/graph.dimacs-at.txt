@@ -1,0 +1,18 @@
+c This is an example graph in the DIMACS format extended to support attributes.
+c Associate a vertex attribute with "v <attribute integer>".
+c Associate an edge attribute with "e <source vertex> <dest vertex> <attribute integer>".
+c All index values for vertices start at the value 1.
+c If any attribute is missing, the value 0 is substituted.
+c Specifying vertices is optional.  Additional vertices are implied by associated edges.
+v 0
+v 7
+v 4
+v 9
+v 3
+v 2
+e 1 2 0
+e 2 3 3
+e 3 1 2
+e 4 5 1
+e 5 6 1
+e 6 4 2

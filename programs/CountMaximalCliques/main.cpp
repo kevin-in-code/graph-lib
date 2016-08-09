@@ -56,12 +56,15 @@ int main(int argc, const char* argv[])
         std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
         std::cout << " dimacs     file is in DIMACS format" << std::endl;
+        std::cout << " dimacs-at  file is in DIMACS format with attribute extensions" << std::endl;
+        std::cout << " dimacs-lin file contains multiple graphs in linear DIMACS format" << std::endl;
         std::cout << " filename   file containing the graph in the specified format" << std::endl;
     }
     else
     {
         std::string filename(argv[3]);
         GraphLoader loader(filename);
+        std::vector<Graph*> graphs;
         Graph* graph = nullptr;
 
         if (!loader.isOpen())
@@ -85,27 +88,52 @@ int main(int argc, const char* argv[])
                 graph = loader.loadDIMACS();
             }
             else
+            if (strcmp(argv[2], "dimacs-at") == 0)
+            {
+                graph = loader.loadAttributedDIMACS();
+            }
+            else
+            if (strcmp(argv[2], "dimacs-lin") == 0)
+            {
+                graphs = loader.loadLinearDIMACS();
+            }
+            else
             {
                 std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
             }
 
-            if (graph)
+            if (graph) graphs.push_back(graph);
+
+            if (graphs.size())
             {
+                CliqueEnumerator ce = nullptr;
+
                 if (strcmp(argv[1], "tomita") == 0)
                 {
-                    test(&AllCliques_Tomita, graph);
+                    ce = &AllCliques_Tomita;
                 }
                 else
                 if (strcmp(argv[1], "naude") == 0)
                 {
-                    test(&AllCliques_Naude, graph);
+                    ce = &AllCliques_Naude;
                 }
                 else
                 {
                     std::cout << "argument \"" << argv[1] << "\" is not a recognised maximal clique enumerator" << std::endl;
                 }
 
-                delete graph;
+                if (ce)
+                {
+                    for (auto it = graphs.begin(); it != graphs.end(); ++it) {
+                        test(ce, *it);
+                    }
+                }
+
+                for (std::size_t c = graphs.size(); c > 0; c--)
+                {
+                    delete graphs[c - 1];
+                    graphs[c - 1] = nullptr;
+                }
             }
         }
     }
