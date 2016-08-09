@@ -155,7 +155,7 @@ namespace kn
 
 
     public:
-        MatchingOptimiser() : MatchingOptimiser(50) {}
+        MatchingOptimiser() : MatchingOptimiser(10) {}
         MatchingOptimiser(std::size_t estDim) : MatchingOptimiser(estDim, estDim) {}
 
         MatchingOptimiser(std::size_t estDim1, std::size_t estDim2);
