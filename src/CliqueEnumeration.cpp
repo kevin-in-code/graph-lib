@@ -232,7 +232,7 @@ namespace kn
                                 X->intersectWith(N[w]);
 
                                 /// Very important!
-                                /// We are iterating through P, and we have potentially just modified P.
+                                /// We are iterating through X, and we have potentially just modified X.
                                 /// It is essential that the iterator be written to allow concurrent updates.
                                 /// If your iterator does not allow concurrent updates, then just "goto search".
 
