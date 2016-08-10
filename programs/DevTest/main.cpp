@@ -10,41 +10,110 @@
 #include <iostream>
 #include <string>
 #include <Matrix.hpp>
+#include <Graph.hpp>
 #include <OptimalMatching.hpp>
+#include <GraphSimilarity.hpp>
 
 using namespace kn;
 
-int main(int argc, const char* argv[])
+void show(Matrix<float> m)
 {
-    Matrix<double> m(5, 5);
-    m[0][0] = 1.0; m[0][1] = 2.0; m[0][2] = 1.0; m[0][3] = 9.0; m[0][4] = 1.0;
-    m[1][0] = 2.0; m[1][1] = 3.0; m[1][2] = 1.0; m[1][3] = 1.0; m[1][4] = 5.0;
-    m[2][0] = 1.0; m[2][1] = 5.0; m[2][2] = 0.0; m[2][3] = 2.0; m[2][4] = 2.0;
-    m[3][0] = 3.0; m[3][1] = 1.0; m[3][2] = 0.0; m[3][3] = 1.0; m[3][4] = 2.0;
-    m[4][0] = 1.0; m[4][1] = 0.0; m[4][2] = 4.0; m[4][3] = 3.0; m[4][4] = 1.0;
-    MatchingOptimiser<double> mo(5, 5);
-    double sum = 0.0;
-    Matching<double> matching(mo.solve(m, true));
-    std::cout << matching.sumGood << std::endl;
-
-    Matrix<double> a(6, 6);
-    a[0][0] = 2.0; a[0][1] = 0.0; a[0][2] = 0.0; a[0][3] = 0.0; a[0][4] = 0.0; a[0][5] = 0.0;
-    a[1][0] = 0.0; a[1][1] = 1.0; a[1][2] = 0.0; a[1][3] = 0.0; a[1][4] = 0.0; a[1][5] = 0.0;
-    a[2][0] = 0.0; a[2][1] = 0.0; a[2][2] = 3.0; a[2][3] = 0.0; a[2][4] = 0.0; a[2][5] = 0.0;
-    a[3][0] = 0.0; a[3][1] = 0.0; a[3][2] = 0.0; a[3][3] = 1.0; a[3][4] = 0.0; a[3][5] = 0.0;
-    a[4][0] = 0.0; a[4][1] = 0.0; a[4][2] = 0.0; a[4][3] = 0.0; a[4][4] = 2.0; a[4][5] = 1.0;
-    a[5][0] = 0.0; a[5][1] = 0.0; a[5][2] = 0.0; a[5][3] = 0.0; a[5][4] = 0.0; a[5][5] = 9.0;
-    Matrix<double> b(2, 3);
-    b[0][0] = 1.0; b[0][1] = 1.0; b[0][2] = 1.0;
-    b[1][0] = 1.0; b[1][1] = 1.0; b[1][2] = 2.0;
-    Matrix<double> c;
-    c.multiplyAsColumn(a, b);
-    for (std::size_t row = 0; row < c.countRows(); row++)
+    std::size_t rows = m.countRows();
+    std::size_t columns = m.countColumns();
+    for (std::size_t row = 0; row < rows; row++)
     {
-        for (std::size_t column = 0; column < c.countColumns(); column++)
+        for (std::size_t column = 0; column < columns; column++)
         {
-            std::cout << " " << c.getValue(row, column);
+            std::cout << " " << m.getValue(row, column);
         }
         std::cout << std::endl;
     }
+    std::cout << std::endl;
+}
+
+int main(int argc, const char* argv[])
+{
+    ///*
+    Graph a;
+    a.addVertex(1);
+    a.addVertex(2);
+    a.addVertex(3);
+    a.addEdge(0, 1, 0);
+    a.addEdge(1, 2, 0);
+
+    Graph b;
+    b.addVertex(1);
+    b.addVertex(2);
+    b.addVertex(1);
+    b.addEdge(0, 1, 0);
+    b.addEdge(1, 2, 0);
+    //b.addEdge(2, 0, 0);
+    //*/
+
+    /*
+    Graph a;
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addArc(0, 1, 0);
+    a.addArc(0, 2, 0);
+    a.addArc(1, 2, 0);
+    a.addArc(2, 3, 0);
+    a.addArc(3, 1, 0);
+    a.addArc(1, 4, 0);
+    a.addArc(2, 4, 0);
+
+    Graph b;
+    b.addVertex(0);
+    b.addVertex(0);
+    b.addVertex(0);
+    b.addArc(0, 1, 0);
+    b.addArc(1, 2, 0);
+    */
+
+    /*
+    Graph a;
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addArc(0, 1, 0);
+
+    Graph b;
+    b.addVertex(0);
+    b.addVertex(0);
+    b.addArc(0, 1, 0);
+    */
+
+    /*
+    Graph a;
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addVertex(0);
+    a.addArc(0, 1, 0);
+    a.addArc(1, 2, 0);
+
+    Graph b;
+    b.addVertex(0);
+    b.addVertex(0);
+    b.addVertex(0);
+    b.addArc(0, 1, 0);
+    b.addArc(1, 2, 0);
+    */
+
+    BlondelSimilarity blondel;
+    Mapping<float> mapping;
+    blondel.solve(mapping, a, b, 0.000000001);
+
+    std::cout << mapping.meanScore() << std::endl;
+
+    Matrix<float> sim = blondel.fixedPoint();
+    Matrix<float> M = blondel.M;
+
+    show(M);
+    show(sim);
+
+    std::string t;
+    std::cin >> t;
+    
 }

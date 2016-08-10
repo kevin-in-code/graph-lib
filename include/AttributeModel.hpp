@@ -27,6 +27,11 @@ namespace kn
             return 0;
         }
 
+        virtual bool compatible(std::size_t idA, std::size_t idB) const
+        {
+            return (idA == idB);
+        }
+
         virtual int relation(std::size_t idA, std::size_t idB) const
         {
             if (idA == idB)

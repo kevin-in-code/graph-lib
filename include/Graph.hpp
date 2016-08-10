@@ -18,6 +18,7 @@
 #include <memory>
 #include <BitStructures.hpp>
 #include <AttributeModel.hpp>
+#include <Matrix.hpp>
 
 namespace kn
 {
@@ -127,6 +128,26 @@ namespace kn
         }
 
         std::unique_ptr<std::vector<IntegerSet>> adjacency();
+
+        template <typename T>
+        void constructAdjacencyMatrix(Matrix<T>& m) const
+        {
+            m.reshape(vertices.size(), vertices.size());
+            for (std::size_t u = 0; u < vertices.size(); u++)
+            {
+                for (std::size_t v = 0; v < vertices.size(); v++)
+                {
+                    if (hasArc(vertices[u].id, vertices[v].id))
+                    {
+                        m.setValue(u, v, 1);
+                    }
+                    else
+                    {
+                        m.setValue(u, v, 0);
+                    }
+                }
+            }
+        }
 
         std::size_t countVertices() const
         {

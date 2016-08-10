@@ -150,7 +150,7 @@ namespace kn
             {
                 delete[] values;
 
-                this->values = new double[m.size];
+                this->values = new T[m.size];
                 this->rowShift = m.rowShift;
                 this->columnShift = m.columnShift;
                 this->rows = m.rows;
@@ -278,7 +278,7 @@ namespace kn
         void normalise(double p)
         {
             double n = norm(p);
-            divide((T)n);
+            if (n != Zero) divide((T)n);
         }
 
         double norm(double p) const
@@ -510,9 +510,9 @@ namespace kn
             std::size_t length = c.rows * c.columns;
             assert(m.rows == length);
             reshape(c.rows, c.columns);
-            for (std::size_t column = 0; column < columns; column++)
+            for (std::size_t row = 0; row < rows; row++)
             {
-                for (std::size_t row = 0; row < rows; row++)
+                for (std::size_t column = 0; column < columns; column++)
                 {
                     std::size_t mrow = column * rows + row;
                     T sum = Zero;

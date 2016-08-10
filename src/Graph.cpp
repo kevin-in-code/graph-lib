@@ -6,6 +6,8 @@ namespace kn
 
     Graph::Graph()
     {
+        vertexAttributes = nullptr;
+        edgeAttributes = nullptr;
         nextVertexID = 0;
         nextEdgeID = 0;
     }

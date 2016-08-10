@@ -31,18 +31,133 @@ namespace kn
     };
 
     template <typename T>
+    class Mapping
+    {
+    private:
+        static constexpr T Zero = 0;
+
+        std::vector<MatchingPair<T> > pairs;
+        std::vector<std::size_t> uToV, vToU;
+        IntegerSet unmappedU, unmappedV;
+        std::size_t divisor;
+        T sum;
+
+        struct IncreasingScore
+        {
+            inline bool operator() (const MatchingPair<T>& x, const MatchingPair<T>& y)
+            {
+                return (x.score < y.score);
+            }
+        };
+
+        struct DecreasingScore
+        {
+            inline bool operator() (const MatchingPair<T>& x, const MatchingPair<T>& y)
+            {
+                return (y.score < x.score);
+            }
+        };
+
+    public:
+        Mapping()
+        {
+            clear(1, 1);
+        }
+
+        void clear(std::size_t rows, std::size_t columns)
+        {
+            divisor = std::max(rows, columns);
+            pairs.clear();
+            uToV.clear();
+            vToU.clear();
+            uToV.reserve(rows);
+            vToU.reserve(columns);
+            for (std::size_t k = 0; k < rows; k++)
+            {
+                uToV.push_back(0);
+            }
+            for (std::size_t k = 0; k < columns; k++)
+            {
+                vToU.push_back(0);
+            }
+            unmappedU.setMaxCardinality(rows);
+            unmappedV.setMaxCardinality(columns);
+            unmappedU.fill();
+            unmappedV.fill();
+            sum = Zero;
+        }
+
+        std::size_t countPairs()
+        {
+            return pairs.size();
+        }
+
+        const MatchingPair<T>& getPair(std::size_t index)
+        {
+            return pairs[index];
+        }
+
+        void sortIncreasingScore()
+        {
+            std::sort(pairs.begin(), pairs.end(), IncreasingScore());
+        }
+
+        void sortDecreasingScore()
+        {
+            std::sort(pairs.begin(), pairs.end(), DecreasingScore());
+        }
+
+        void add(MatchingPair<T> pair)
+        {
+            std::size_t u = pair.u;
+            std::size_t v = pair.v;
+
+            if (unmappedU.contains(u) && unmappedV.contains(v))
+            {
+                unmappedU.remove(u);
+                unmappedV.remove(v);
+                uToV[u] = v;
+                vToU[v] = u;
+                sum += pair.score;
+                pairs.push_back(pair);
+            }
+        }
+
+        IntegerSet::Iterator getUnmappedU()
+        {
+            return unmappedU.iterator();
+        }
+
+        IntegerSet::Iterator getUnmappedV()
+        {
+            return unmappedV.iterator();
+        }
+
+        T sumScore()
+        {
+            return sum;
+        }
+
+        T meanScore()
+        {
+            return sum / divisor;
+        }
+    };
+    
+    /*
+    template <typename T>
     class Matching
     {
     public:
         std::vector<MatchingPair<T> > goodPairs, allPairs, weakPairs;
-        T sumGood, sumAll;
+        T sumGood, sumAll, avgGood;
 
         Matching()
         {
             goodPairs.clear();
             allPairs.clear();
             weakPairs.clear();
-            sumGood = sumAll = 0;
+            sumGood = sumAll = avgGood = 0;
         }
 
         Matching(const ArrayView<MatchingPair<T> >& mapping)
@@ -62,6 +177,7 @@ namespace kn
                 }
                 sumAll += pair.score;
             }
+            avgGood = sumGood / 
         }
 
         Matching(const Matching<T>& mapping)
@@ -113,6 +229,7 @@ namespace kn
             return *this;
         }
     };
+    */
 
     template <typename T>
     class MatchingOptimiser
@@ -143,7 +260,7 @@ namespace kn
 
         bool transposed, maximise;
 
-        ArrayView<MatchingPair<T> > mapping;
+        ArrayView<MatchingPair<T> > matching;
 
         void prepare(const Matrix<T>& costs);
         void engageNext(std::size_t pi, std::size_t pj);
@@ -164,9 +281,7 @@ namespace kn
 
         void reallocate(std::size_t estDim1, std::size_t estDim2);
 
-        const ArrayView<MatchingPair<T> >& solve(const Matrix<T>& costs, bool maximise);
-
-        static T sumMatching(ArrayView<MatchingPair<T> >& matching, bool excludeNegatives);
+        void solve(Mapping<T>& mapping, const Matrix<T>& costs, bool maximise);
     };
 
     template<typename T>
@@ -229,7 +344,7 @@ namespace kn
         rowStars = ArrayView<std::size_t>(arraySizeT + rows * 2 + 1, rows);
         rowPrimes = ArrayView<std::size_t>(arraySizeT + rows * 3 + 1, rows);
         columnStars = ArrayView<std::size_t>(arraySizeT + rows * 4 + 1, columns);
-        mapping = ArrayView<MatchingPair<T> >(arrayMatching, rows);
+        matching = ArrayView<MatchingPair<T> >(arrayMatching, rows);
 
         for (std::size_t ri = 0; ri < rows; ri++)
         {
@@ -252,23 +367,19 @@ namespace kn
         }
         else
         {
-            for (std::size_t u = 0; u < rows-1; u++)
+            for (std::size_t u = 0; u < rows; u++)
             {
                 for (std::size_t v = 0; v < columns; v++)
                 {
                     matrix[u][v] = costs.getValue(u, v);
                 }
             }
-            for (std::size_t v = 0; v < columns; v++)
-            {
-                matrix[4][v] = costs.getValue(4, v);
-            }
         }
 
 
         if (maximise)
         {
-            double big = matrix[0][0];
+            T big = matrix[0][0];
             for (std::size_t u = 0; u < rows; u++)
             {
                 for (std::size_t v = 0; v < columns; v++)
@@ -285,10 +396,10 @@ namespace kn
             }
         }
 
-        for (std::size_t t = 0; t < mapping.size(); t++)
+        for (std::size_t t = 0; t < matching.size(); t++)
         {
-            mapping[t].u = Unused;
-            mapping[t].v = Unused;
+            matching[t].u = Unused;
+            matching[t].v = Unused;
         }
 
         chainLen = 0;
@@ -436,6 +547,7 @@ namespace kn
     T MatchingOptimiser<T>::findSmallestUncovered()
     {
         T smallest = matrix[0][0];
+        bool empty = true;
 
         for (std::size_t i = 0; i < rows; i++)
         {
@@ -446,7 +558,11 @@ namespace kn
                 if (columnsCovered.contains(j)) continue;
 
                 T value = matrix[i][j];
-                if (value < smallest) smallest = value;
+                if (empty || (value < smallest))
+                {
+                    smallest = value;
+                    empty = false;
+                }
             }
         }
         return smallest;
@@ -516,21 +632,21 @@ namespace kn
             // RecordResult(i, j);
             if (transposed)
             {
-                mapping[i].u = j;
-                mapping[i].v = i;
-                mapping[i].score = costs.getValue(j, i);
+                matching[i].u = j;
+                matching[i].v = i;
+                matching[i].score = costs.getValue(j, i);
             }
             else
             {
-                mapping[i].u = i;
-                mapping[i].v = j;
-                mapping[i].score = costs.getValue(i, j);
+                matching[i].u = i;
+                matching[i].v = j;
+                matching[i].score = costs.getValue(i, j);
             }
         }
     }
 
     template<typename T>
-    const ArrayView<MatchingPair<T> >& MatchingOptimiser<T>::solve(const Matrix<T>& costs, bool maximise)
+    void MatchingOptimiser<T>::solve(Mapping<T>& mapping, const Matrix<T>& costs, bool maximise)
     {
         defineProblem(costs.countRows(), costs.countColumns(), maximise);
         prepare(costs);
@@ -539,32 +655,11 @@ namespace kn
             doNext();
         }
         extractMapping(costs);
-        return mapping;
-    }
-
-    template<typename T>
-    T MatchingOptimiser<T>::sumMatching(ArrayView<MatchingPair<T> >& matching, bool excludeNegatives)
-    {
-        double localSum = 0.0;
-        if (excludeNegatives)
+        mapping.clear(costs.countRows(), costs.countColumns());
+        for (std::size_t index = 0; index < matching.size(); index++)
         {
-            for (std::size_t i = 0; i < matching.size(); i++)
-            {
-                if (matching[i].score >= 0.0)
-                {
-                    localSum += matching[i].score;
-                }
-            }
+            mapping.add(matching[index]);
         }
-        else
-        {
-            for (std::size_t i = 0; i < matching.size(); i++)
-            {
-                localSum += matching[i].score;
-            }
-        }
-        return localSum;
     }
-
 
 }
