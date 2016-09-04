@@ -111,22 +111,27 @@ namespace kn
     /// Move assignment
     Graph& Graph::operator=(Graph&& other)
     {
-        vertices.clear();
-        vertexAttributes = nullptr;
-        edgeAttributes = nullptr;
-        vertexIDtoIndex.clear();
-        edgeIDtoSourceID.clear();
+        if (this != &other)
+        {
+            vertices.clear();
+            vertexAttributes = nullptr;
+            edgeAttributes = nullptr;
+            vertexIDtoIndex.clear();
+            edgeIDtoSourceID.clear();
 
-        vertices.swap(other.vertices);
-        std::swap(vertexAttributes, other.vertexAttributes);
-        std::swap(edgeAttributes, other.edgeAttributes);
-        vertexIDtoIndex.swap(other.vertexIDtoIndex);
-        edgeIDtoSourceID.swap(other.edgeIDtoSourceID);
+            vertices.swap(other.vertices);
+            std::swap(vertexAttributes, other.vertexAttributes);
+            std::swap(edgeAttributes, other.edgeAttributes);
+            vertexIDtoIndex.swap(other.vertexIDtoIndex);
+            edgeIDtoSourceID.swap(other.edgeIDtoSourceID);
 
-        nextVertexID = other.nextVertexID;
-        nextEdgeID = other.nextEdgeID;
-        other.nextVertexID = 0;
-        other.nextEdgeID = 0;
+            nextVertexID = other.nextVertexID;
+            nextEdgeID = other.nextEdgeID;
+            other.nextVertexID = 0;
+            other.nextEdgeID = 0;
+        }
+
+
 
         return *this;
     }
