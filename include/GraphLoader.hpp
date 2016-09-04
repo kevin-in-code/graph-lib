@@ -34,7 +34,7 @@ namespace kn
             */
             this->buffer = new char[BufferSize];
             stream.rdbuf()->pubsetbuf(buffer, BufferSize);
-            stream.open(filename, std::ifstream::binary);
+            stream.open(filename, std::ios::binary | std::ios::in);
         }
 
         ~GraphLoader()

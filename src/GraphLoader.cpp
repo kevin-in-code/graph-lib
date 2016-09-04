@@ -177,7 +177,6 @@ namespace kn
             if (!stream) break;
 
             // we now have data for another vertex
-
             g.addVertex(0);
 
             for (std::size_t j = 0; j <= i; j++)
