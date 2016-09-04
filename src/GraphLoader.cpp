@@ -12,9 +12,9 @@
 
 namespace kn
 {
-    Graph* GraphLoader::loadAdjacencyMatrix(char delim, bool directed)
+    void GraphLoader::loadAdjacencyMatrix(Graph& g, char delim, bool directed)
     {
-        Graph* g = new Graph();
+        g.clear();
 
         std::string line;
         std::size_t numVertices = 0;
@@ -30,18 +30,18 @@ namespace kn
                 none = false;
                 if (column == numVertices)
                 {
-                    g->addVertex(0);
+                    g.addVertex(0);
                     numVertices++;
                 }
                 int value = std::stoi(entry);
                 if (value != 0)
                 {
                     if (directed)
-                        g->addArc(row, column, 0);
+                        g.addArc(row, column, 0);
                     else
-                    if (!g->hasEdge(row, column))
+                    if (!g.hasEdge(row, column))
                     {
-                        g->addEdge(row, column, 0);
+                        g.addEdge(row, column, 0);
                     }
                 }
                 column++;
@@ -49,14 +49,17 @@ namespace kn
             if (none) break;
             row++;
         }
+    }
 
+    Graph* GraphLoader::loadAdjacencyMatrix(char delim, bool directed)
+    {
+        Graph* g = new Graph();
+        loadAdjacencyMatrix(*g, delim, directed);
         return g;
     }
 
-    Graph* GraphLoader::loadAdjacencyList(char delim, bool directed)
+    void GraphLoader::loadAdjacencyList(Graph& g, char delim, bool directed)
     {
-        Graph* g = new Graph();
-
         std::string line;
         std::size_t numVertices = 0;
         while (std::getline(stream, line))
@@ -68,7 +71,7 @@ namespace kn
                 std::size_t source = (std::size_t) std::stoi(entry) - 1;
                 while (source >= numVertices)
                 {
-                    g->addVertex(0);
+                    g.addVertex(0);
                     numVertices++;
                 }
                 while (std::getline(lstream, entry, delim))
@@ -76,29 +79,32 @@ namespace kn
                     std::size_t dest = (std::size_t) std::stoi(entry) - 1;
                     while (dest >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
                     if (directed)
-                        g->addArc(source, dest, 0);
+                        g.addArc(source, dest, 0);
                     else
-                    if (!g->hasEdge(source, dest))
+                    if (!g.hasEdge(source, dest))
                     {
-                        g->addEdge(source, dest, 0);
+                        g.addEdge(source, dest, 0);
                     }
                 }
             }
             else
                 break;
         }
+    }
 
+    Graph* GraphLoader::loadAdjacencyList(char delim, bool directed)
+    {
+        Graph* g = new Graph();
+        loadAdjacencyList(*g, delim, directed);
         return g;
     }
 
-    Graph* GraphLoader::loadDIMACS()
+    void GraphLoader::loadDIMACS(Graph& g)
     {
-        Graph* g = new Graph();
-
         std::string line;
         std::size_t numVertices = 0;
         while (std::getline(stream, line))
@@ -119,31 +125,34 @@ namespace kn
                     dest--;
                     while (source >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
                     while (dest >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
-                    if (!g->hasEdge(source, dest))
+                    if (!g.hasEdge(source, dest))
                     {
-                        g->addEdge(source, dest, 0);
+                        g.addEdge(source, dest, 0);
                     }
                 }
             }
             else
                 break;
         }
+    }
 
+    Graph* GraphLoader::loadDIMACS()
+    {
+        Graph* g = new Graph();
+        loadDIMACS(*g);
         return g;
     }
 
-    Graph* GraphLoader::loadAttributedDIMACS()
+    void GraphLoader::loadAttributedDIMACS(Graph& g)
     {
-        Graph* g = new Graph();
-
         std::string line;
         std::size_t numVertices = 0;
         while (std::getline(stream, line))
@@ -161,7 +170,7 @@ namespace kn
                     lstream >> attr;
                     if (!lstream) attr = 0;
 
-                    g->addVertex(attr);
+                    g.addVertex(attr);
                     numVertices++;
                 }
                 else
@@ -177,31 +186,34 @@ namespace kn
                     dest--;
                     while (source >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
                     while (dest >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
-                    if (!g->hasEdge(source, dest))
+                    if (!g.hasEdge(source, dest))
                     {
-                        g->addEdge(source, dest, attr);
+                        g.addEdge(source, dest, attr);
                     }
                 }
             }
             else
                 break;
         }
+    }
 
+    Graph* GraphLoader::loadAttributedDIMACS()
+    {
+        Graph* g = new Graph();
+        loadAttributedDIMACS(*g);
         return g;
     }
 
-    Graph* GraphLoader::loadLinearDIMACS(const std::string dimacs)
+    void GraphLoader::loadLinearDIMACS(Graph& g, const std::string dimacs)
     {
-        Graph* g = new Graph();
-
         std::size_t numVertices = 0;
         std::stringstream lstream(dimacs);
 
@@ -219,7 +231,7 @@ namespace kn
                     lstream >> attr;
                     if (!lstream) attr = 0;
 
-                    g->addVertex(attr);
+                    g.addVertex(attr);
                     numVertices++;
                 }
                 else
@@ -235,31 +247,35 @@ namespace kn
                     dest--;
                     while (source >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
                     while (dest >= numVertices)
                     {
-                        g->addVertex(0);
+                        g.addVertex(0);
                         numVertices++;
                     }
-                    if (!g->hasEdge(source, dest))
+                    if (!g.hasEdge(source, dest))
                     {
-                        g->addEdge(source, dest, attr);
+                        g.addEdge(source, dest, attr);
                     }
                 }
                 else
                     break;
             }
         }
+    }
 
+    Graph* GraphLoader::loadLinearDIMACS(const std::string dimacs)
+    {
+        Graph* g = new Graph();
+        loadLinearDIMACS(*g, dimacs);
         return g;
     }
 
-    std::vector<Graph*> GraphLoader::loadLinearDIMACS()
+    void GraphLoader::loadLinearDIMACS(std::vector<Graph>& graphs, bool append)
     {
-        std::vector<Graph*> graphs;
-
+        if (!append) graphs.clear();
         std::string line;
         while (std::getline(stream, line))
         {
@@ -267,12 +283,11 @@ namespace kn
             lstream >> std::ws;
             if (lstream)
             {
-                Graph* g = GraphLoader::loadLinearDIMACS(line);
-                graphs.push_back(g);
+                Graph g;
+                GraphLoader::loadLinearDIMACS(g, line);
+                graphs.push_back(std::move(g));
             }
         }
-
-        return graphs;
     }
 }
 

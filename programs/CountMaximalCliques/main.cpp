@@ -32,12 +32,12 @@ public:
 
 typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 
-void test(CliqueEnumerator ce, Graph* graph)
+void test(CliqueEnumerator ce, const Graph& graph)
 {
     CountingCliqueReceiver cr;
     StopWatch sw;
     sw.start();
-    ce(graph, &cr);
+    ce(&graph, &cr);
     sw.stop();
 
     double seconds = sw.elapsedSeconds();
@@ -64,7 +64,7 @@ int main(int argc, const char* argv[])
     {
         std::string filename(argv[3]);
         GraphLoader loader(filename);
-        std::vector<Graph*> graphs;
+        std::vector<Graph> graphs;
         Graph* graph = nullptr;
 
         if (!loader.isOpen())
@@ -95,14 +95,18 @@ int main(int argc, const char* argv[])
             else
             if (strcmp(argv[2], "dimacs-lin") == 0)
             {
-                graphs = loader.loadLinearDIMACS();
+                loader.loadLinearDIMACS(graphs);
             }
             else
             {
                 std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
             }
 
-            if (graph) graphs.push_back(graph);
+            if (graph)
+            {
+                graphs.push_back(std::move(*graph));
+                delete graph;
+            }
 
             if (graphs.size())
             {
@@ -124,15 +128,9 @@ int main(int argc, const char* argv[])
 
                 if (ce)
                 {
-                    for (auto it = graphs.begin(); it != graphs.end(); ++it) {
-                        test(ce, *it);
+                    for (std::size_t c = 0; c < graphs.size(); c++) {
+                        test(ce, graphs[c]);
                     }
-                }
-
-                for (std::size_t c = graphs.size(); c > 0; c--)
-                {
-                    delete graphs[c - 1];
-                    graphs[c - 1] = nullptr;
                 }
             }
         }

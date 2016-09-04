@@ -47,17 +47,19 @@ namespace kn
             return stream.is_open();
         }
 
+        void loadAdjacencyMatrix(Graph& g, char delim, bool directed);
         Graph* loadAdjacencyMatrix(char delim, bool directed);
-
+        void loadAdjacencyList(Graph& g, char delim, bool directed);
         Graph* loadAdjacencyList(char delim, bool directed);
-
+        void loadDIMACS(Graph& g);
         Graph* loadDIMACS();
-
+        void loadAttributedDIMACS(Graph& g);
         Graph* loadAttributedDIMACS();
 
+        static void loadLinearDIMACS(Graph& g, const std::string dimacs);
         static Graph* loadLinearDIMACS(const std::string dimacs);
 
-        std::vector<Graph*> loadLinearDIMACS();
+        void loadLinearDIMACS(std::vector<Graph>& graphs, bool append = false);
     };
 
 }
