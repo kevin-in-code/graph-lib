@@ -51,6 +51,45 @@ namespace kn
         return (bits & (uint64_t)(-(int64_t)bits));
     }
 
+    inline int lowestBitIndex(uint64_t bits)
+    {
+        return bitToIndex(lowestBit(bits));
+    }
+
+    inline int highestBitIndex(uint64_t bits)
+    {
+        int position;
+        int shift;
+
+        position = (bits > 0xFFFFFFFF) << 5;
+        bits >>= position;
+
+        shift = (bits > 0xFFFF) << 4;
+        bits >>= shift;
+        position |= shift;
+
+        shift = (bits > 0xFF) << 3;
+        bits >>= shift;
+        position |= shift;
+
+        shift = (bits > 0xF) << 2;
+        bits >>= shift;
+        position |= shift;
+
+        shift = (bits > 0x3) << 1;
+        bits >>= shift;
+        position |= shift;
+
+        position |= (bits >> 1);
+
+        return position;
+    }
+
+    inline uint64_t highestBit(uint64_t bits)
+    {
+        return singleBit(highestBitIndex(bits));
+    }
+
     inline int countBits(uint64_t bits)
     {
         return
@@ -192,6 +231,44 @@ namespace kn
         bool isEmpty() const
         {
             return (array[0] == 0) && verifyIsEmpty();
+        }
+
+        std::size_t firstElement() const
+        {
+            std::size_t currentIndex = 0;
+            std::size_t currentBaseValue = 0;
+            uint64_t currentBits = array[currentIndex];
+            while ((currentBits == 0) && (currentIndex + 1 < arraySize))
+            {
+                currentIndex++;
+                currentBits = array[currentIndex];
+                currentBaseValue += 64;
+            }
+            if (currentBits != 0)
+            {
+                return currentBaseValue + lowestBitIndex(currentBits);
+            }
+            else
+                return maxCardinality;
+        }
+
+        std::size_t lastElement() const
+        {
+            std::size_t currentIndex = arraySize - 1;
+            std::size_t currentBaseValue = currentIndex * 64;
+            uint64_t currentBits = array[currentIndex];
+            while ((currentBits == 0) && (currentIndex > 0))
+            {
+                currentIndex--;
+                currentBits = array[currentIndex];
+                currentBaseValue -= 64;
+            }
+            if (currentBits != 0)
+            {
+                return currentBaseValue + highestBitIndex(currentBits);
+            }
+            else
+                return maxCardinality;
         }
 
         void clear();
