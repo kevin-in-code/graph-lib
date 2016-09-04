@@ -78,6 +78,40 @@ namespace kn
         }
     }
 
+    Graph::Graph(const Graph& other, const std::vector<VertexID>& permutation)
+    {
+        nextVertexID = 0;
+        nextEdgeID = 0;
+
+        std::unordered_map<VertexID, VertexID> map;
+        Vertex oV, oU;
+        for (std::size_t index = 0; index < permutation.size(); index++)
+        {
+            other.getVertexByIndex(permutation[index], oV);
+            VertexID v = this->addVertex(oV.attrID);
+            map.insert(std::make_pair(oV.id, v));
+        }
+
+        for (auto it = other.vertexIterator(); it.next(oV); )
+        {
+            VertexID v = map[oV.id];
+
+            for (auto it2 = other.vertexIterator(); it2.next(oU); )
+            {
+                VertexID u = map[oU.id];
+
+                Edge e;
+                if (other.getEdge(u, v, e) && (!e.undirected || (u < v)))
+                {
+                    if (e.undirected)
+                        this->addEdge(u, v, e.attrID);
+                    else
+                        this->addArc(u, v, e.attrID);
+                }
+            }
+        }
+    }
+
     Graph::~Graph()
     {
         for (std::size_t index = vertices.size(); index > 0; index--)

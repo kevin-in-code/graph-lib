@@ -109,6 +109,8 @@ namespace kn
 
         Graph(const Graph& other, bool complement);
 
+        Graph(const Graph& other, const std::vector<VertexID>& permutation);
+
         virtual ~Graph();
 
         Graph(Graph&& other);
