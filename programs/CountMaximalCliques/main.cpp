@@ -55,7 +55,8 @@ int main(int argc, const char* argv[])
         std::cout << " naude      use Naude's pivot selection" << std::endl;
         std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
-        std::cout << " dimacs     file is in DIMACS format" << std::endl;
+        std::cout << " dimacs     file is in DIMACS ascii format" << std::endl;
+        std::cout << " dimacs-b   file is in DIMACS binary format" << std::endl;
         std::cout << " dimacs-at  file is in DIMACS format with attribute extensions" << std::endl;
         std::cout << " dimacs-lin file contains multiple graphs in linear DIMACS format" << std::endl;
         std::cout << " filename   file containing the graph in the specified format" << std::endl;
@@ -88,7 +89,12 @@ int main(int argc, const char* argv[])
                 graph = loader.loadDIMACS();
             }
             else
-            if (strcmp(argv[2], "dimacs-at") == 0)
+            if (strcmp(argv[2], "dimacs-b") == 0)
+            {
+                graph = loader.loadDIMACSB();
+            }
+            else
+                if (strcmp(argv[2], "dimacs-at") == 0)
             {
                 graph = loader.loadAttributedDIMACS();
             }

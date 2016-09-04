@@ -8,7 +8,8 @@
 #include <vector>
 #include <unordered_map>
 #include <cctype>
-
+#include <cstdio>
+#include <iostream>
 
 namespace kn
 {
@@ -148,6 +149,56 @@ namespace kn
     {
         Graph* g = new Graph();
         loadDIMACS(*g);
+        return g;
+    }
+
+    void GraphLoader::loadDIMACSB(Graph& g)
+    {
+        int preambleSize = 0;
+
+        // read header
+        stream >> preambleSize;
+        stream.ignore(std::numeric_limits<std::streamsize>::max(), '\n'); // skip end-to-line
+
+        // skip preamble
+        stream.seekg(preambleSize, std::ios_base::cur);
+
+        // read data
+        std::vector<unsigned char> row;
+        row.reserve(256);
+        std::size_t i = 0;
+        for (i = 0; ; i++)
+        {
+            std::size_t rowSize = (i + 8) / 8;
+            row.clear();
+            row.resize(rowSize, 0);
+
+            stream.read((char*) &row[0], rowSize);
+            if (!stream) break;
+
+            // we now have data for another vertex
+
+            g.addVertex(0);
+
+            for (std::size_t j = 0; j <= i; j++)
+            {
+                unsigned char bit = (unsigned char)(1 << (7 - (j & 7)));
+                std::size_t index = j >> 3;
+
+                if ((row[index] & bit) == bit)
+                {
+                    g.addEdge(i, j, 0);
+                }
+            }
+        }
+
+        // note: the originally published loader would fail if the graph size was not present in the preamble
+    }
+
+    Graph* GraphLoader::loadDIMACSB()
+    {
+        Graph* g = new Graph();
+        loadDIMACSB(*g);
         return g;
     }
 

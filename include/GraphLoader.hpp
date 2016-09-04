@@ -34,7 +34,7 @@ namespace kn
             */
             this->buffer = new char[BufferSize];
             stream.rdbuf()->pubsetbuf(buffer, BufferSize);
-            stream.open(filename);
+            stream.open(filename, std::ifstream::binary);
         }
 
         ~GraphLoader()
@@ -49,10 +49,16 @@ namespace kn
 
         void loadAdjacencyMatrix(Graph& g, char delim, bool directed);
         Graph* loadAdjacencyMatrix(char delim, bool directed);
+
         void loadAdjacencyList(Graph& g, char delim, bool directed);
         Graph* loadAdjacencyList(char delim, bool directed);
+
         void loadDIMACS(Graph& g);
         Graph* loadDIMACS();
+
+        void loadDIMACSB(Graph& g);
+        Graph* loadDIMACSB();
+
         void loadAttributedDIMACS(Graph& g);
         Graph* loadAttributedDIMACS();
 
