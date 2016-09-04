@@ -114,6 +114,16 @@ namespace kn
         Graph(Graph&& other);
         Graph& operator=(Graph&& other);
 
+        void clear()
+        {
+            vertices.clear();
+            vertexIDtoIndex.clear();
+            edgeIDtoSourceID.clear();
+
+            nextVertexID = 0;
+            nextEdgeID = 0;
+        }
+
         const AttributeModel* getVertexAttributeModel() const
         {
             return vertexAttributes;
