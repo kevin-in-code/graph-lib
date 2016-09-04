@@ -180,7 +180,10 @@ namespace kn
         void sanitiseHighBits()
         {
             /// Here, I correct for a cardinality that does not lie on a 64-bit boundary.
-            array[arraySize - 1] &= (singleBit(maxCardinality & 63) - 1);
+            if ((maxCardinality & 63) != 0)
+            {
+                array[arraySize - 1] &= (singleBit(maxCardinality & 63) - 1);
+            }
         }
 
     public:
