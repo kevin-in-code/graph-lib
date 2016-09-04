@@ -462,6 +462,18 @@ namespace kn
             }
         }
 
+        void blend(const Matrix<T>& m, T alpha)
+        {
+            assert((rows == m.rows) && (columns == m.columns));
+            for (std::size_t row = 0; row < rows; row++)
+            {
+                for (std::size_t column = 0; column < columns; column++)
+                {
+                    setValue(row, column, getValue(row, column) * (1 - alpha) + m.getValue(row, column) * alpha);
+                }
+            }
+        }
+
         void add(const Matrix<T>& m)
         {
             assert((rows == m.rows) && (columns == m.columns));
