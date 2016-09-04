@@ -102,7 +102,7 @@ int main(int argc, const char* argv[])
     */
 
     BlondelSimilarity blondel;
-    Mapping<float> mapping;
+    Matching<float> mapping;
     blondel.solve(mapping, a, b, 0.000000001);
 
     std::cout << mapping.meanScore() << std::endl;
