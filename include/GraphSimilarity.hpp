@@ -9,6 +9,7 @@
 * @version 1.1
 */
 
+#include <memory>
 #include <Graph.hpp>
 #include <Matrix.hpp>
 #include <OptimalMatching.hpp>
@@ -19,7 +20,7 @@ namespace kn
     class FixedPointSimilarity
     {
     private:
-        MatchingOptimiser<float> mo;
+        std::unique_ptr<AssignmentSolver<float>> assignmentSolver;
         Matrix<float> sim[2];
         int index, concludedIndex;
 
@@ -31,7 +32,22 @@ namespace kn
         virtual bool doPostprocess(const Graph& a, const Graph& b, Matrix<float>& newSim, const Matrix<float>& sim);
 
     public:
-        void solve(Mapping<float>& mapping, const Graph& a, const Graph& b, double threshold);
+        FixedPointSimilarity()
+            : assignmentSolver(new MunkresAssignment<float>())
+        {
+        }
+
+        FixedPointSimilarity(std::unique_ptr<AssignmentSolver<float>> solver)
+        {
+            assignmentSolver = std::move(solver);
+        }
+
+        void solve(Matching<float>& mapping, const Graph& a, const Graph& b, double threshold);
+
+        void setAssignmentSolver(std::unique_ptr<AssignmentSolver<float>> solver)
+        {
+            assignmentSolver = std::move(solver);
+        }
 
         const Matrix<float>& fixedPoint()
         {
@@ -59,6 +75,13 @@ namespace kn
 
     public:
         BlondelSimilarity(float bias = 0.0f, bool odd = false)
+        {
+            this->bias = bias;
+            this->odd = odd;
+        }
+
+        BlondelSimilarity(std::unique_ptr<AssignmentSolver<float>> solver, float bias = 0.0f, bool odd = false)
+            : FixedPointSimilarity(std::move(solver))
         {
             this->bias = bias;
             this->odd = odd;

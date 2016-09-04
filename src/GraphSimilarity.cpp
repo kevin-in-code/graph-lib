@@ -51,7 +51,7 @@ namespace kn
         return true;
     }
 
-    void FixedPointSimilarity::solve(Mapping<float>& mapping, const Graph& a, const Graph& b, double threshold)
+    void FixedPointSimilarity::solve(Matching<float>& mapping, const Graph& a, const Graph& b, double threshold)
     {
         index = 0;
         concludedIndex = 0;
@@ -68,7 +68,7 @@ namespace kn
 
         concludedIndex = index;
         if (doPostprocess(a, b, sim[1 - index], sim[index])) index = 1 - index;
-        mo.solve(mapping, sim[index], true);
+        assignmentSolver->maximise(mapping, sim[index]);
     }
 
     void BlondelSimilarity::doInit(Matrix<float>& newSim, const Graph& a, const Graph& b)

@@ -24,19 +24,28 @@ namespace kn
 {
 
     template <typename T>
-    struct MatchingPair
+    class Matching
     {
-        std::size_t u, v;
-        T score;
-    };
+    public:
+        struct Pair
+        {
+            std::size_t u, v;
+            T score;
 
-    template <typename T>
-    class Mapping
-    {
+            Pair() {}
+
+            Pair(std::size_t u, std::size_t v, T score)
+            {
+                this->u = u;
+                this->v = v;
+                this->score = score;
+            }
+        };
+
     private:
         static constexpr T Zero = 0;
 
-        std::vector<MatchingPair<T> > pairs;
+        std::vector<Pair> pairs;
         std::vector<std::size_t> uToV, vToU;
         IntegerSet unmappedU, unmappedV;
         std::size_t divisor;
@@ -44,7 +53,7 @@ namespace kn
 
         struct IncreasingScore
         {
-            inline bool operator() (const MatchingPair<T>& x, const MatchingPair<T>& y)
+            inline bool operator() (const Pair& x, const Pair& y)
             {
                 return (x.score < y.score);
             }
@@ -52,14 +61,14 @@ namespace kn
 
         struct DecreasingScore
         {
-            inline bool operator() (const MatchingPair<T>& x, const MatchingPair<T>& y)
+            inline bool operator() (const Pair& x, const Pair& y)
             {
                 return (y.score < x.score);
             }
         };
 
     public:
-        Mapping()
+        Matching()
         {
             clear(1, 1);
         }
@@ -87,12 +96,12 @@ namespace kn
             sum = Zero;
         }
 
-        std::size_t countPairs()
+        std::size_t countPairs() const
         {
             return pairs.size();
         }
 
-        const MatchingPair<T>& getPair(std::size_t index)
+        const Pair& getPair(std::size_t index) const
         {
             return pairs[index];
         }
@@ -107,132 +116,94 @@ namespace kn
             std::sort(pairs.begin(), pairs.end(), DecreasingScore());
         }
 
-        void add(MatchingPair<T> pair)
+        void add(std::size_t u, std::size_t v, T score)
         {
-            std::size_t u = pair.u;
-            std::size_t v = pair.v;
-
-            if (unmappedU.contains(u) && unmappedV.contains(v))
-            {
-                unmappedU.remove(u);
-                unmappedV.remove(v);
-                uToV[u] = v;
-                vToU[v] = u;
-                sum += pair.score;
-                pairs.push_back(pair);
-            }
+			typename Matching<T>::Pair pair(u, v, score);
+			add(pair);
         }
 
-        IntegerSet::Iterator getUnmappedU()
+        void add(const Pair& pair)
+		{
+			std::size_t u = pair.u;
+			std::size_t v = pair.v;
+			T score = pair.score;
+			if (unmappedU.contains(u) && unmappedV.contains(v))
+			{
+				unmappedU.remove(u);
+				unmappedV.remove(v);
+				uToV[u] = v;
+				vToU[v] = u;
+				sum += score;
+				pairs.push_back(pair);
+			}
+		}
+
+        std::size_t getU(std::size_t v) const
+        {
+            return vToU[v];
+        }
+
+        std::size_t getV(std::size_t u) const
+        {
+            return uToV[u];
+        }
+
+        bool isMappedU(std::size_t u) const
+        {
+            return !unmappedU.contains(u);
+        }
+
+        bool isMappedV(std::size_t v) const
+        {
+            return !unmappedV.contains(v);
+        }
+
+        IntegerSet::Iterator getUnmappedU() const
         {
             return unmappedU.iterator();
         }
 
-        IntegerSet::Iterator getUnmappedV()
+        IntegerSet::Iterator getUnmappedV() const
         {
             return unmappedV.iterator();
         }
 
-        T sumScore()
+        T sumScore() const
         {
             return sum;
         }
 
-        T meanScore()
+        T meanScore() const
         {
             return sum / divisor;
         }
     };
-    
-    /*
+
     template <typename T>
-    class Matching
+    class AssignmentSolver
     {
+    protected:
+        virtual void solve(Matching<T>& matching, const Matrix<T>& costs, bool maximise) = 0;
+
     public:
-        std::vector<MatchingPair<T> > goodPairs, allPairs, weakPairs;
-        T sumGood, sumAll, avgGood;
-
-        Matching()
+        void match(Matching<T>& matching, const Matrix<T>& costs, bool maximise)
         {
-            goodPairs.clear();
-            allPairs.clear();
-            weakPairs.clear();
-            sumGood = sumAll = avgGood = 0;
+            solve(matching, costs, maximise);
         }
 
-        Matching(const ArrayView<MatchingPair<T> >& mapping)
+        void minimise(Matching<T>& matching, const Matrix<T>& costs)
         {
-            for (std::size_t index = 0; index < mapping.size(); index++)
-            {
-                MatchingPair<T> pair = mapping[index];
-                allPairs.push_back(pair);
-                if (pair.score >= 0)
-                {
-                    goodPairs.push_back(pair);
-                    sumGood += pair.score;
-                }
-                else
-                {
-                    weakPairs.push_back(pair);
-                }
-                sumAll += pair.score;
-            }
-            avgGood = sumGood / 
+            solve(matching, costs, false);
         }
 
-        Matching(const Matching<T>& mapping)
+        void maximise(Matching<T>& matching, const Matrix<T>& profits)
         {
-            goodPairs = mapping.goodPairs;
-            allPairs = mapping.allPairs;
-            weakPairs = mapping.weakPairs;
-
-            sumGood = mapping.sumGood;
-            sumAll = mapping.sumAll;
-        }
-
-        Matching<T>& operator=(const ArrayView<MatchingPair<T> >& mapping)
-        {
-            goodPairs.clear();
-            allPairs.clear();
-            weakPairs.clear();
-            sumGood = sumAll = 0;
-
-            for (std::size_t index = 0; index < mapping.size(); index++)
-            {
-                MatchingPair<T> pair = mapping[index];
-                allPairs.push_back(pair);
-                if (pair.score >= 0)
-                {
-                    goodPairs.push_back(pair);
-                    sumGood += pair.score;
-                }
-                else
-                {
-                    weakPairs.push_back(pair);
-                }
-                sumAll += pair.score;
-            }
-            return *this;
-        }
-
-        Matching<T>& operator=(const Matching<T>& mapping)
-        {
-            if (this != &mapping)
-            {
-                goodPairs = mapping.goodPairs;
-                allPairs = mapping.allPairs;
-                weakPairs = mapping.weakPairs;
-
-                sumGood = mapping.sumGood;
-                sumAll = mapping.sumAll;
-            }
-            return *this;
+            solve(matching, profits, true);
         }
     };
-    */
 
     template <typename T>
-    class MatchingOptimiser
+    class MunkresAssignment : public AssignmentSolver<T>
     {
     public:
         static constexpr T Zero = 0;
@@ -244,7 +215,7 @@ namespace kn
         ArrayView<T>* arrayTs;
         T* arrayT;
         std::size_t* arraySizeT;
-        MatchingPair<T>* arrayMatching;
+        typename Matching<T>::Pair* arrayMatching;
 
         std::size_t rows, columns;
 
@@ -258,34 +229,33 @@ namespace kn
         std::size_t numColumnStars, numRowStars, numRowPrimes;
         std::size_t chainLen, numColumnsCovered;
 
-        bool transposed, maximise;
+        bool transposed;
 
-        ArrayView<MatchingPair<T> > matching;
+        ArrayView<typename Matching<T>::Pair> matching;
 
-        void prepare(const Matrix<T>& costs);
+        void prepare(const Matrix<T>& costs, bool maximise);
         void engageNext(std::size_t pi, std::size_t pj);
         bool findUncoveredZero(std::size_t& pi, std::size_t& pj);
         T findSmallestUncovered();
         void doNext();
         void extractMapping(const Matrix<T>& costs);
-        void defineProblem(std::size_t m, std::size_t n, bool maximise);
-
-
-    public:
-        MatchingOptimiser() : MatchingOptimiser(10) {}
-        MatchingOptimiser(std::size_t estDim) : MatchingOptimiser(estDim, estDim) {}
-
-        MatchingOptimiser(std::size_t estDim1, std::size_t estDim2);
-
-        ~MatchingOptimiser();
-
+        void defineProblem(std::size_t m, std::size_t n);
         void reallocate(std::size_t estDim1, std::size_t estDim2);
 
-        void solve(Mapping<T>& mapping, const Matrix<T>& costs, bool maximise);
+    public:
+        MunkresAssignment() : MunkresAssignment(10) {}
+        MunkresAssignment(std::size_t estDim) : MunkresAssignment(estDim, estDim) {}
+
+        MunkresAssignment(std::size_t estDim1, std::size_t estDim2);
+
+        ~MunkresAssignment();
+
+    protected:
+        void solve(Matching<T>& mapping, const Matrix<T>& costs, bool maximise);
     };
 
     template<typename T>
-    MatchingOptimiser<T>::MatchingOptimiser(std::size_t estDim1, std::size_t estDim2)
+    MunkresAssignment<T>::MunkresAssignment(std::size_t estDim1, std::size_t estDim2)
     	: rowsCovered(std::min(estDim1, estDim2)), columnsCovered(std::max(estDim1, estDim2)), rowPrimesTouched(std::min(estDim1, estDim2))
     {
         minorDim = std::min(estDim1, estDim2);
@@ -294,11 +264,11 @@ namespace kn
         arrayTs = new ArrayView<T>[majorDim];
         arrayT = new T[majorDim * minorDim];
         arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
-        arrayMatching = new MatchingPair<T>[minorDim];
+        arrayMatching = new typename Matching<T>::Pair[minorDim];
     }
 
     template<typename T>
-    MatchingOptimiser<T>::~MatchingOptimiser()
+    MunkresAssignment<T>::~MunkresAssignment()
     {
         delete[] arrayMatching;
         delete[] arraySizeT;
@@ -307,7 +277,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::reallocate(std::size_t estDim1, std::size_t estDim2)
+    void MunkresAssignment<T>::reallocate(std::size_t estDim1, std::size_t estDim2)
     {
         std::size_t newMinorDim = std::min(estDim1, estDim2);
         std::size_t newMajorDim = std::max(estDim1, estDim2);
@@ -325,14 +295,13 @@ namespace kn
             arrayTs = new ArrayView<T>[majorDim];
             arrayT = new T[majorDim * minorDim];
             arraySizeT = new std::size_t[majorDim + minorDim * 4 + 1];
-            arrayMatching = new MatchingPair<T>[minorDim];
+            arrayMatching = new typename Matching<T>::Pair[minorDim];
         }
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::defineProblem(std::size_t m, std::size_t n, bool maximise)
+    void MunkresAssignment<T>::defineProblem(std::size_t m, std::size_t n)
     {
-        this->maximise = maximise;
         transposed = (m > n);
         rows = std::min(m, n);
         columns = std::max(m, n);
@@ -344,7 +313,11 @@ namespace kn
         rowStars = ArrayView<std::size_t>(arraySizeT + rows * 2 + 1, rows);
         rowPrimes = ArrayView<std::size_t>(arraySizeT + rows * 3 + 1, rows);
         columnStars = ArrayView<std::size_t>(arraySizeT + rows * 4 + 1, columns);
-        matching = ArrayView<MatchingPair<T> >(arrayMatching, rows);
+        matching = ArrayView<typename Matching<T>::Pair>(arrayMatching, rows);
+
+		rowPrimesTouched.setMaxCardinality(rows);
+		rowsCovered.setMaxCardinality(rows);
+		columnsCovered.setMaxCardinality(columns);
 
         for (std::size_t ri = 0; ri < rows; ri++)
         {
@@ -353,7 +326,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::prepare(const Matrix<T>& costs)
+    void MunkresAssignment<T>::prepare(const Matrix<T>& costs, bool maximise)
     {
         if (transposed)
         {
@@ -425,7 +398,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::engageNext(std::size_t pi, std::size_t pj)
+    void MunkresAssignment<T>::engageNext(std::size_t pi, std::size_t pj)
     {
         // InitChain(pi, pj);
         chain[0] = pi;
@@ -521,7 +494,7 @@ namespace kn
     }
 
     template<typename T>
-    bool MatchingOptimiser<T>::findUncoveredZero(std::size_t& pi, std::size_t& pj)
+    bool MunkresAssignment<T>::findUncoveredZero(std::size_t& pi, std::size_t& pj)
     {
         for (std::size_t i = 0; i < rows; i++)
         {
@@ -544,7 +517,7 @@ namespace kn
     }
 
     template<typename T>
-    T MatchingOptimiser<T>::findSmallestUncovered()
+    T MunkresAssignment<T>::findSmallestUncovered()
     {
         T smallest = matrix[0][0];
         bool empty = true;
@@ -569,7 +542,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::doNext()
+    void MunkresAssignment<T>::doNext()
     {
         for (;;)
         {
@@ -623,7 +596,7 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::extractMapping(const Matrix<T>& costs)
+    void MunkresAssignment<T>::extractMapping(const Matrix<T>& costs)
     {
         for (std::size_t i = 0; i < rows; i++)
         {
@@ -646,10 +619,10 @@ namespace kn
     }
 
     template<typename T>
-    void MatchingOptimiser<T>::solve(Mapping<T>& mapping, const Matrix<T>& costs, bool maximise)
+    void MunkresAssignment<T>::solve(Matching<T>& mapping, const Matrix<T>& costs, bool maximise)
     {
-        defineProblem(costs.countRows(), costs.countColumns(), maximise);
-        prepare(costs);
+        defineProblem(costs.countRows(), costs.countColumns());
+        prepare(costs, maximise);
         while (numColumnsCovered < rows)
         {
             doNext();
@@ -659,6 +632,123 @@ namespace kn
         for (std::size_t index = 0; index < matching.size(); index++)
         {
             mapping.add(matching[index]);
+        }
+    }
+
+    template <typename T>
+    class GreedyAssignment : public AssignmentSolver<T>
+    {
+    private:
+        IntegerSet covered;
+
+    protected:
+        void solve(Matching<T>& matching, const Matrix<T>& costs, bool maximise);
+    };
+
+    template<typename T>
+    void GreedyAssignment<T>::solve(Matching<T>& matching, const Matrix<T>& costs, bool maximise)
+    {
+        std::size_t rows = costs.countRows();
+        std::size_t columns = costs.countColumns();
+
+		matching.clear(rows, columns);
+		if (rows <= columns)
+        {
+            std::size_t minorDim = rows;
+            std::size_t majorDim = columns;
+
+            covered.setMaxCardinality(majorDim);
+            covered.clear();
+
+            for (std::size_t u = 0; u < minorDim; u++)
+            {
+                std::size_t bestV = ~0;
+                T best;
+                if (!covered.contains(u))
+                {
+                    bestV = u;
+                    best = costs[u][u];
+                }
+                for (std::size_t v = 0; v < majorDim; v++)
+                {
+                    if (covered.contains(v)) continue;
+                    T cur = costs[u][v];
+
+                    if (~bestV == 0)
+                    {
+                        bestV = v;
+                        best = cur;
+                    }
+                    else
+                        if (maximise)
+                        {
+                            if (cur > best)
+                            {
+                                bestV = v;
+                                best = cur;
+                            }
+                        }
+                        else
+                        {
+                            if (cur < best)
+                            {
+                                bestV = v;
+                                best = cur;
+                            }
+                        }
+                }
+                covered.add(bestV);
+                matching.add(u, bestV, best);
+            }
+        }
+        else
+        {
+            std::size_t minorDim = columns;
+            std::size_t majorDim = rows;
+
+            covered.setMaxCardinality(majorDim);
+            covered.clear();
+
+            for (std::size_t u = 0; u < minorDim; u++)
+            {
+                std::size_t bestV = ~0;
+                T best;
+                if (!covered.contains(u))
+                {
+                    bestV = u;
+                    best = costs[u][u];
+                }
+                for (std::size_t v = 0; v < majorDim; v++)
+                {
+                    if (covered.contains(v)) continue;
+                    T cur = costs[v][u];
+
+                    if (~bestV == 0)
+                    {
+                        bestV = v;
+                        best = cur;
+                    }
+                    else
+                        if (maximise)
+                        {
+                            if (cur > best)
+                            {
+                                bestV = v;
+                                best = cur;
+                            }
+                        }
+                        else
+                        {
+                            if (cur < best)
+                            {
+                                bestV = v;
+                                best = cur;
+                            }
+                        }
+                }
+                covered.add(bestV);
+                matching.add(bestV, u, best);
+            }
         }
     }
 
