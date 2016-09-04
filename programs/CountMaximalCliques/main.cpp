@@ -23,10 +23,16 @@ class CountingCliqueReceiver : public CliqueReceiver
 {
 public:
     uint64_t count = 0;
+    uint64_t size = 0;
 
     virtual void onClique(const Graph& graph, const IntegerSet& vertices)
     {
         count++;
+    }
+
+    virtual void onApply()
+    {
+        size++;
     }
 };
 
@@ -41,18 +47,19 @@ void test(CliqueEnumerator ce, const Graph& graph)
     sw.stop();
 
     double seconds = sw.elapsedSeconds();
-    std::cout << cr.count << " " << seconds << std::endl;
+    std::cout << cr.count << " cliques, " << seconds << " seconds, " << cr.size << " recursive calls" << std::endl;
 }
 
 int main(int argc, const char* argv[])
 {
-    if ((argc < 4) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0)))
+    if ((argc < 4) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0) && (strcmp(argv[1], "segundo") != 0)))
     {
         std::cout << "usage: program algorithm format filename" << std::endl;
         std::cout << "  e.g. program tomita dimacs graph.dimacs.txt" << std::endl;
         std::cout << std::endl;
         std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
         std::cout << " naude      use Naude's pivot selection" << std::endl;
+        std::cout << " segundo    use Segundo et al. pivot selection" << std::endl;
         std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
         std::cout << " dimacs     file is in DIMACS ascii format" << std::endl;
@@ -126,6 +133,11 @@ int main(int argc, const char* argv[])
                 if (strcmp(argv[1], "naude") == 0)
                 {
                     ce = &AllCliques_Naude;
+                }
+                else
+                if (strcmp(argv[1], "segundo") == 0)
+                {
+                    ce = &AllCliques_Segundo;
                 }
                 else
                 {

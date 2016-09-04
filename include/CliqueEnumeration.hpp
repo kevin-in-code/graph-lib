@@ -25,11 +25,15 @@ namespace kn
 
         virtual void onClique(const Graph& graph, const IntegerSet& vertices) {}
 
+        virtual void onApply() {}
+
         virtual void onComplete() {}
     };
 
     void AllCliques_Tomita(const Graph* graph, CliqueReceiver* receiver);
 
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver);
+
+    void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver);
 
 }

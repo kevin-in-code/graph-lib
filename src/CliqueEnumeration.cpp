@@ -107,6 +107,7 @@ namespace kn
             
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
+            receiver->onApply();
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
@@ -300,6 +301,65 @@ namespace kn
         }
     };
 
+    class BKSearch_Segundo : public BKSearch
+    {
+    public:
+        BKSearch_Segundo(const Graph* graph, CliqueReceiver* receiver) :
+            BKSearch(graph, receiver) {}
+
+        static Graph* maxDegreeLast(const Graph* graph)
+        {
+            Graph::Vertex vertex;
+            std::size_t n = graph->countVertices();
+            std::vector<Graph::VertexID> permutation(n);
+            IntegerSet avail(n);
+            avail.fill();
+
+            for (std::size_t index = permutation.size(); index > 0; index--)
+            {
+                std::size_t i = index - 1;
+                std::size_t highestDegree = 0;
+                std::size_t indexOfHighest = n;
+
+                for (auto it = avail.iterator(); it.hasNext(); )
+                {
+                    std::size_t v = it.next();
+                    graph->getVertexByIndex(v, vertex);
+                    if ((indexOfHighest == n) || (vertex.outDegree >= highestDegree))
+                    {
+                        highestDegree = vertex.outDegree;
+                        indexOfHighest = v;
+                    }
+                }
+                avail.remove(indexOfHighest);
+                permutation[i] = indexOfHighest;
+            }
+            return new Graph(*graph, permutation);
+        }
+
+        virtual IntegerSet* pivotConflict(IntegerSet* S, IntegerSet* P, IntegerSet* X)
+        {
+            if (!X->isEmpty())
+            {
+                std::size_t q = X->lastElement();
+                IntegerSet* Q = this->intersect(P, &K[q]);
+
+                return Q;
+            }
+            if (!P->isEmpty())
+            {
+                std::size_t q = P->lastElement();
+                IntegerSet* Q = this->intersect(P, &K[q]);
+
+                return Q;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+    };
+
 
     void AllCliques_Tomita(const Graph* graph, CliqueReceiver* receiver)
     {
@@ -321,6 +381,26 @@ namespace kn
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver)
     {
         BKSearch_Naude alg(graph, receiver);
+
+        IntegerSet* S = alg.reserveSet();
+        IntegerSet* P = alg.reserveSet();
+        IntegerSet* X = alg.reserveSet();
+
+        S->clear();
+        P->fill();
+        X->clear();
+
+        receiver->onClear();
+        alg.apply(S, P, X);
+        receiver->onComplete();
+    }
+
+    void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver)
+    {
+        std::unique_ptr<Graph> permutedGraph(BKSearch_Segundo::maxDegreeLast(graph));
+        BKSearch_Segundo alg(permutedGraph.get(), receiver);
+
+        //BKSearch_Segundo alg(graph, receiver);
 
         IntegerSet* S = alg.reserveSet();
         IntegerSet* P = alg.reserveSet();
