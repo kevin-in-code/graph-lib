@@ -11,7 +11,7 @@
 #include <string>
 #include <Matrix.hpp>
 #include <Graph.hpp>
-#include <OptimalMatching.hpp>
+#include <AssignmentSolver.hpp>
 #include <GraphSimilarity.hpp>
 
 using namespace kn;
@@ -115,5 +115,5 @@ int main(int argc, const char* argv[])
 
     std::string t;
     std::cin >> t;
-    
+
 }

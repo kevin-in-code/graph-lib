@@ -12,7 +12,7 @@
 #include <memory>
 #include <Graph.hpp>
 #include <Matrix.hpp>
-#include <OptimalMatching.hpp>
+#include <AssignmentSolver.hpp>
 
 namespace kn
 {
