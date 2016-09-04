@@ -103,6 +103,10 @@ namespace kn
         Graph();
         Graph(const AttributeModel* vertexAttributeModel, const AttributeModel* edgeAttributeModel);
 
+        Graph(const Graph& other) : Graph(other, false)
+        {
+        }
+
         Graph(const Graph& other, bool complement);
 
         virtual ~Graph();
