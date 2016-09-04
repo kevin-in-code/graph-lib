@@ -113,6 +113,7 @@ namespace kn
 
         Graph(Graph&& other);
         Graph& operator=(Graph&& other);
+        Graph& operator=(const Graph& other);
 
         void clear()
         {
