@@ -54,69 +54,101 @@ void test(CliqueEnumerator ce, const Graph& graph)
     std::cout << cr.count << " cliques, " << seconds << " seconds, " << cr.size << " recursive calls" << std::endl;
 }
 
+bool strEndsWith(const char* str, const char* ending)
+{
+    std::size_t strLength = strlen(str);
+    std::size_t endingLength = strlen(ending);
+    return (strLength >= endingLength && (0 == strcmp(str + strLength - endingLength, ending)));
+}
+
 int main(int argc, const char* argv[])
 {
     if ((argc < 3) || ((strcmp(argv[1], "tomita-et-al") != 0) && (strcmp(argv[1], "naude") != 0) && (strcmp(argv[1], "segundo-et-al") != 0)))
     {
-        std::cout << "usage: program algorithm format filename" << std::endl;
+        std::cout << "usage: program algorithm [format] filename" << std::endl;
         std::cout << "  e.g. program tomita dimacs graph.dimacs.txt" << std::endl;
         std::cout << std::endl;
         std::cout << " tomita-et-al   use Tomita et al. pivot selection" << std::endl;
         std::cout << " naude          use Naude's pivot selection" << std::endl;
         std::cout << " segundo-et-al  use Segundo et al. pivot selection" << std::endl;
         std::cout << std::endl;
-        std::cout << " al         file is adjacency list in CSV format" << std::endl;
-        std::cout << " dimacs     file is in DIMACS ascii format" << std::endl;
-        std::cout << " dimacs-b   file is in DIMACS binary format" << std::endl;
-        std::cout << " dimacs-at  file is in DIMACS format with attribute extensions" << std::endl;
-        std::cout << " dimacs-lin file contains multiple graphs in linear DIMACS format" << std::endl;
-        std::cout << " filename   file containing the graph in the specified format" << std::endl;
+        std::cout << " am             file is adjacency matrix in CSV format" << std::endl;
+        std::cout << " al             file is adjacency list in CSV format" << std::endl;
+        std::cout << " dimacs         file is in DIMACS ascii format" << std::endl;
+        std::cout << " dimacs-b       file is in DIMACS binary format" << std::endl;
+        std::cout << " dimacs-at      file is in DIMACS format with attribute extensions" << std::endl;
+        std::cout << " dimacs-lin     file contains multiple graphs in linear DIMACS format" << std::endl;
+        std::cout << " filename       file containing the graph in the specified format" << std::endl;
     }
     else
     {
-        std::string filename(argv[3]);
+        const char* cFilename = argv[2 + ((argc > 3) ? 1 : 0)];
+        std::string filename(cFilename);
+        std::string format((argc > 3)? argv[2] : "");
         GraphLoader loader(filename);
         std::vector<Graph> graphs;
         Graph* graph = nullptr;
 
+        if (format.length() == 0)
+        {
+            if (strEndsWith(cFilename, ".am") || strEndsWith(cFilename, ".am.txt") || strEndsWith(cFilename, ".am.csv"))
+                format = "am";
+            else
+            if (strEndsWith(cFilename, ".al") || strEndsWith(cFilename, ".al.txt") || strEndsWith(cFilename, ".al.csv"))
+                format = "al";
+            else
+            if (strEndsWith(cFilename, ".clq") || strEndsWith(cFilename, ".clq.txt") || strEndsWith(cFilename, ".dimacs.txt"))
+                format = "dimacs";
+            else
+            if (strEndsWith(cFilename, ".clq.b") || strEndsWith(cFilename, ".dimacs.b"))
+                format = "dimacs-b";
+            else
+            if (strEndsWith(cFilename, ".dimacs-at.txt"))
+                format = "dimacs-at";
+            else
+            if (strEndsWith(cFilename, ".dimacs-lin.txt"))
+                format = "dimacs-lin";
+        }
+
+        if (format.length() == 0)
+        {
+            std::cout << "file format \"" << format << "\" is not understood" << std::endl;
+        }
+        else
         if (!loader.isOpen())
         {
-            std::cout << "file \"" << argv[3] << "\" could not be opened" << std::endl;
+            std::cout << "file \"" << filename << "\" could not be opened" << std::endl;
         }
         else
         {
-            if (strcmp(argv[2], "am") == 0)
+            if (format == "am")
             {
                 graph = loader.loadAdjacencyMatrix(',', false);
             }
             else
-            if (strcmp(argv[2], "al") == 0)
+            if (format == "al")
             {
                 graph = loader.loadAdjacencyList(',', false);
             }
             else
-            if (strcmp(argv[2], "dimacs") == 0)
+            if (format == "dimacs")
             {
                 graph = loader.loadDIMACS();
             }
             else
-            if (strcmp(argv[2], "dimacs-b") == 0)
+            if (format == "dimacs-b")
             {
                 graph = loader.loadDIMACSB();
             }
             else
-                if (strcmp(argv[2], "dimacs-at") == 0)
+            if (format == "dimacs-at")
             {
                 graph = loader.loadAttributedDIMACS();
             }
             else
-            if (strcmp(argv[2], "dimacs-lin") == 0)
+            if (format == "dimacs-lin")
             {
                 loader.loadLinearDIMACS(graphs);
-            }
-            else
-            {
-                std::cout << "argument \"" << argv[2] << "\" is not a recognised graph format" << std::endl;
             }
 
             if (graph)
