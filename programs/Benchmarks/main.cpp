@@ -20,38 +20,23 @@
 using namespace kn;
 
 #ifdef NDEBUG
-    class CountingCliqueReceiver : public CliqueReceiver
+typedef CliqueReceiver TheCliqueReceiver;
 #else
-    class CountingCliqueReceiver : public PrettyPrintCliqueReceiver
+typedef PrettyPrintCliqueReceiver TheCliqueReceiver;
 #endif
-{
-public:
-    uint64_t count = 0;
-    uint64_t size = 0;
-
-    virtual void onClique(const Graph& graph, const IntegerSet& vertices)
-    {
-        count++;
-    }
-
-    virtual void onApply()
-    {
-        size++;
-    }
-};
 
 typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 
 void test(CliqueEnumerator ce, const Graph& graph)
 {
-    CountingCliqueReceiver cr;
+    TheCliqueReceiver cr;
     StopWatch sw;
     sw.start();
     ce(&graph, &cr);
     sw.stop();
 
     double seconds = sw.elapsedSeconds();
-    std::cout << cr.count << " cliques, " << seconds << " seconds, " << cr.size << " recursive calls" << std::endl;
+    std::cout << cr.cliqueCount() << " cliques, " << seconds << " seconds, " << cr.recursionCount() << " recursive calls" << std::endl;
 }
 
 std::vector<std::string> Benchmarks = {
