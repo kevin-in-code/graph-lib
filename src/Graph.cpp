@@ -78,7 +78,7 @@ namespace kn
         }
     }
 
-    Graph::Graph(const Graph& other, const std::vector<VertexID>& permutation)
+    Graph::Graph(const Graph& other, const std::vector<VertexID>& permutation, bool reassignAttributes)
     {
         nextVertexID = 0;
         nextEdgeID = 0;
@@ -88,7 +88,9 @@ namespace kn
         for (std::size_t index = 0; index < permutation.size(); index++)
         {
             other.getVertexByIndex(permutation[index], oV);
-            VertexID v = this->addVertex(oV.attrID);
+            AttrID attr = oV.attrID;
+            if (reassignAttributes) attr = permutation[index] + 1;
+            VertexID v = this->addVertex(attr);
             map.insert(std::make_pair(oV.id, v));
         }
 
