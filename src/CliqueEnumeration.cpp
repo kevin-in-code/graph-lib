@@ -368,7 +368,7 @@ namespace kn
     };
 
 
-    Graph* maxDegreeLast(const Graph* graph)
+    Graph* maxDegreeFirst(const Graph* graph)
     {
         Graph::Vertex vertex;
         std::size_t n = graph->countVertices();
@@ -435,7 +435,7 @@ namespace kn
 
     void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver)
     {
-        std::unique_ptr<Graph> permutedGraph(maxDegreeLast(graph));
+        std::unique_ptr<Graph> permutedGraph(maxDegreeFirst(graph));
         BKSearch_Segundo alg(permutedGraph.get(), receiver);
 
         //BKSearch_Segundo alg(graph, receiver);
