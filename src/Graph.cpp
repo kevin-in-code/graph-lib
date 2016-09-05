@@ -101,7 +101,7 @@ namespace kn
                 VertexID u = map[oU.id];
 
                 Edge e;
-                if (other.getEdge(u, v, e) && (!e.undirected || (u < v)))
+                if (other.getEdge(oU.id, oV.id, e) && (!e.undirected || (u < v)))
                 {
                     if (e.undirected)
                         this->addEdge(u, v, e.attrID);
