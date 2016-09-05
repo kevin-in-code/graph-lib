@@ -52,15 +52,15 @@ void test(CliqueEnumerator ce, const Graph& graph)
 
 int main(int argc, const char* argv[])
 {
-    if ((argc < 4) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0) && (strcmp(argv[1], "segundo") != 0)))
+    if ((argc < 3) || ((strcmp(argv[1], "tomita-et-al") != 0) && (strcmp(argv[1], "naude") != 0) && (strcmp(argv[1], "segundo-et-al") != 0)))
     {
         std::cout << "usage: program algorithm format filename" << std::endl;
         std::cout << "  e.g. program tomita dimacs graph.dimacs.txt" << std::endl;
         std::cout << std::endl;
-        std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
-        std::cout << " naude      use Naude's pivot selection" << std::endl;
-        std::cout << " segundo    use Segundo et al. pivot selection" << std::endl;
-        std::cout << " am         file is adjacency matrix in CSV format" << std::endl;
+        std::cout << " tomita-et-al   use Tomita et al. pivot selection" << std::endl;
+        std::cout << " naude          use Naude's pivot selection" << std::endl;
+        std::cout << " segundo-et-al  use Segundo et al. pivot selection" << std::endl;
+        std::cout << std::endl;
         std::cout << " al         file is adjacency list in CSV format" << std::endl;
         std::cout << " dimacs     file is in DIMACS ascii format" << std::endl;
         std::cout << " dimacs-b   file is in DIMACS binary format" << std::endl;
@@ -125,7 +125,7 @@ int main(int argc, const char* argv[])
             {
                 CliqueEnumerator ce = nullptr;
 
-                if (strcmp(argv[1], "tomita") == 0)
+                if (strcmp(argv[1], "tomita-et-al") == 0)
                 {
                     ce = &AllCliques_Tomita;
                 }
@@ -135,7 +135,7 @@ int main(int argc, const char* argv[])
                     ce = &AllCliques_Naude;
                 }
                 else
-                if (strcmp(argv[1], "segundo") == 0)
+                if (strcmp(argv[1], "segundo-et-al") == 0)
                 {
                     ce = &AllCliques_Segundo;
                 }
