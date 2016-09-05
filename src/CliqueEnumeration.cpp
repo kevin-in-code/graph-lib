@@ -111,11 +111,24 @@ namespace kn
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
+#ifndef NDEBUG
+                bool grouped = (Q->countLimit(2) > 1);
+                if (grouped) receiver->onOpenGroup();
+                bool first = true;
+                Graph::Vertex vertex;
+#endif
+
                 auto it = Q->iterator();
                 while (it.hasNext())
                 {
                     std::size_t v = it.next();
                     P->remove(v);
+#ifndef NDEBUG
+                    if (!first) receiver->onPartition();
+                    first = false;
+                    graph->getVertexByIndex(v, vertex);
+                    receiver->onVertex(v, vertex.attrID);
+#endif
 
                     IntegerSet* s2 = this->insert(S, v);
                     IntegerSet* p2 = this->intersect(P, &N[v]);
@@ -126,6 +139,10 @@ namespace kn
                     X->add(v);
                 }
 
+#ifndef NDEBUG
+                if (first) receiver->onCutOff();
+                if (grouped) receiver->onCloseGroup();
+#endif
                 this->releaseSet(); // Release Q
             }
             else
@@ -133,10 +150,16 @@ namespace kn
             {
                 /// maximal clique found
                 receiver->onClique(*graph, *S);
+#ifndef NDEBUG
+                receiver->onOk();
+#endif
             }
             else
             {
                 /// cut-off: sub-maximal clique
+#ifndef NDEBUG
+                receiver->onCutOff();
+#endif
             }
 
             this->releaseSet(); // Release X
@@ -207,6 +230,9 @@ namespace kn
         search:
             std::size_t q = numVertices; // an initial value which is not a valid vertex
             std::size_t least = numVertices + 1; // not infinity, but large enough
+#ifndef NDEBUG
+            Graph::Vertex vertex;
+#endif
 
             if (!X->isEmpty())
             {
@@ -231,6 +257,11 @@ namespace kn
                                 S->add(w);
                                 P->intersectWith(N[w]);
                                 X->intersectWith(N[w]);
+
+#ifndef NDEBUG
+                                graph->getVertexByIndex(w, vertex);
+                                receiver->onVertex(w, vertex.attrID);
+#endif
 
                                 /// Very important!
                                 /// We are iterating through X, and we have potentially just modified X.
@@ -272,6 +303,11 @@ namespace kn
                                 S->add(v);
                                 P->intersectWith(N[v]);
                                 X->intersectWith(N[v]);
+
+#ifndef NDEBUG
+                                graph->getVertexByIndex(v, vertex);
+                                receiver->onVertex(v, vertex.attrID);
+#endif
 
                                 /// Very important!
                                 /// We are iterating through P, and we have potentially just modified P.
