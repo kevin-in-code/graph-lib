@@ -107,7 +107,7 @@ namespace kn
             
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
-            receiver->onApply();
+            receiver->recursionCounter++;
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
@@ -149,6 +149,7 @@ namespace kn
             if (X->isEmpty())
             {
                 /// maximal clique found
+                receiver->cliqueCounter++;
                 receiver->onClique(*graph, *S);
 #ifndef NDEBUG
                 receiver->onOk();
@@ -411,6 +412,7 @@ namespace kn
         P->fill();
         X->clear();
 
+        receiver->reset();
         receiver->onClear();
         alg.apply(S, P, X);
         receiver->onComplete();
@@ -428,6 +430,7 @@ namespace kn
         P->fill();
         X->clear();
 
+        receiver->reset();
         receiver->onClear();
         alg.apply(S, P, X);
         receiver->onComplete();
@@ -448,6 +451,7 @@ namespace kn
         P->fill();
         X->clear();
 
+        receiver->reset();
         receiver->onClear();
         alg.apply(S, P, X);
         receiver->onComplete();

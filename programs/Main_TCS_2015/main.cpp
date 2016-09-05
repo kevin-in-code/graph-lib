@@ -22,17 +22,6 @@
 
 using namespace kn;
 
-class CountingCliqueReceiver : public CliqueReceiver
-{
-public:
-    uint64_t count = 0;
-
-    virtual void onClique(const Graph& graph, const IntegerSet& vertices)
-    {
-        count++;
-    }
-};
-
 typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 
 void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t maxCount, bool diffuseError)
@@ -52,7 +41,7 @@ void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t m
     for (uint32_t c = 0; c < count; c++)
     {
         Graph* g = ErdosRenyi::Gnm(r, n, m, nullptr, nullptr);
-        CountingCliqueReceiver cr;
+        CliqueReceiver cr;
         StopWatch sw;
         sw.start();
         ce(g, &cr);
@@ -60,7 +49,7 @@ void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t m
         delete g;
 
         double seconds = sw.elapsedSeconds();
-        std::cout << n << "," << d << "," << (c + 1) << "," << cr.count << "," << seconds << std::endl;
+        std::cout << n << "," << d << "," << (c + 1) << "," << cr.cliqueCount() << "," << seconds << std::endl;
 
         if (diffuseError)
         {

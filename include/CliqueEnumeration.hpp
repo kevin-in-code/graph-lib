@@ -23,12 +23,24 @@ namespace kn
 
     class CliqueReceiver
     {
+    private:
+        friend class BKSearch;
+        uint64_t cliqueCounter = 0;
+        uint64_t recursionCounter = 0;
+
     public:
+        void reset()
+        {
+            cliqueCounter = 0;
+            recursionCounter = 0;
+        }
+
+        uint64_t cliqueCount() { return cliqueCounter; }
+        uint64_t recursionCount() { return recursionCounter; }
+
         virtual void onClear() {}
 
         virtual void onClique(const Graph& graph, const IntegerSet& vertices) {}
-
-        virtual void onApply() {}
 
         virtual void onOpenGroup() {}
         virtual void onPartition() {}
