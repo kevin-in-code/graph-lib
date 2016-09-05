@@ -279,6 +279,7 @@ namespace kn
         void copy(const IntegerSet& b);
 
         std::size_t count() const;
+        std::size_t countLimit(std::size_t limit) const;
         std::size_t countCommon(const IntegerSet& b) const;
         std::size_t countCommonLimit(const IntegerSet& b, std::size_t limit, std::size_t& w) const;
 

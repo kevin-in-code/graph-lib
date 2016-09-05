@@ -189,6 +189,17 @@ namespace kn
         return sum;
     }
 
+    std::size_t IntegerSet::countLimit(std::size_t limit) const
+    {
+        std::size_t sum = 0;
+        for (std::size_t index = 0; index < arraySize; index++)
+        {
+            sum += countBits(array[index]);
+            if (sum >= limit) break;
+        }
+        return sum;
+    }
+
     std::size_t IntegerSet::countCommon(const IntegerSet& b) const
     {
         assert(maxCardinality == b.maxCardinality);
