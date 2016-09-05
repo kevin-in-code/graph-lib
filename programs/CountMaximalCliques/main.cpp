@@ -19,7 +19,11 @@
 
 using namespace kn;
 
-class CountingCliqueReceiver : public CliqueReceiver
+#ifdef NDEBUG
+    class CountingCliqueReceiver : public CliqueReceiver
+#else
+    class CountingCliqueReceiver : public PrettyPrintCliqueReceiver
+#endif
 {
 public:
     uint64_t count = 0;
