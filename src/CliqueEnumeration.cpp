@@ -5,6 +5,7 @@
 
 namespace kn
 {
+//#define ENABLE_PRETTY_PRINT
 
     /// The common context for many clique enumerators in the BronKerbosch family.
 
@@ -30,17 +31,25 @@ namespace kn
             numVertices = graph->countVertices();
             for (std::size_t ui = 0; ui < numVertices; ui++)
             {
-                Graph::VertexID u = graph->getVertexID(ui);
                 IntegerSet neighbours(numVertices);
+                Graph::Vertex u;
+                Graph::Edge e;
+                graph->getVertexByIndex(ui, u);
+                for (auto it = graph->exitingEdgeIterator(u.id); it.next(e); )
+                {
+                    std::size_t vi = graph->getVertexIndex(e.v);
+                    if (ui != vi) neighbours.add(vi);
+                }
+                /*
                 for (std::size_t vi = 0; vi < numVertices; vi++)
                 {
                     if (ui == vi) continue;
-                    Graph::VertexID v = graph->getVertexID(vi);
-                    if (graph->hasEdge(u, v))
+                    if (graph->hasEdgeByIndices(ui, vi))
                     {
-                        neighbours.add(v);
+                        neighbours.add(vi);
                     }
                 }
+                */
 
                 IntegerSet conflicts(neighbours);
                 conflicts.invert();
@@ -111,7 +120,7 @@ namespace kn
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 bool grouped = (Q->countLimit(2) > 1);
                 if (grouped) receiver->onOpenGroup();
                 bool first = true;
@@ -123,7 +132,7 @@ namespace kn
                 {
                     std::size_t v = it.next();
                     P->remove(v);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                     if (!first) receiver->onPartition();
                     first = false;
                     graph->getVertexByIndex(v, vertex);
@@ -139,7 +148,7 @@ namespace kn
                     X->add(v);
                 }
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 if (first) receiver->onCutOff();
                 if (grouped) receiver->onCloseGroup();
 #endif
@@ -151,14 +160,14 @@ namespace kn
                 /// maximal clique found
                 receiver->cliqueCounter++;
                 receiver->onClique(*graph, *S);
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 receiver->onOk();
 #endif
             }
             else
             {
                 /// cut-off: sub-maximal clique
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 receiver->onCutOff();
 #endif
             }
@@ -231,7 +240,7 @@ namespace kn
         search:
             std::size_t q = numVertices; // an initial value which is not a valid vertex
             std::size_t least = numVertices + 1; // not infinity, but large enough
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
             Graph::Vertex vertex;
 #endif
 
@@ -259,7 +268,7 @@ namespace kn
                                 P->intersectWith(N[w]);
                                 X->intersectWith(N[w]);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                                 graph->getVertexByIndex(w, vertex);
                                 receiver->onVertex(w, vertex.attrID);
 #endif
@@ -305,7 +314,7 @@ namespace kn
                                 P->intersectWith(N[v]);
                                 X->intersectWith(N[v]);
 
-#ifndef NDEBUG
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                                 graph->getVertexByIndex(v, vertex);
                                 receiver->onVertex(v, vertex.attrID);
 #endif
