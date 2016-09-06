@@ -212,6 +212,11 @@ namespace kn
             }
         }
 
+        std::size_t getVertexIndex(VertexID id) const
+        {
+            return vertexIDtoIndex.at(id);
+        }
+
         bool getVertex(VertexID id, Vertex& v) const
         {
             if (!validVertexID(id))
@@ -277,6 +282,7 @@ namespace kn
         bool hasArc(VertexID sourceID, VertexID destinationID) const;
 
         bool hasEdge(VertexID sourceID, VertexID destinationID) const;
+        bool hasEdgeByIndices(std::size_t sourceIndex, std::size_t destinationIndex) const;
 
         EdgeID addArc(VertexID sourceID, VertexID destinationID, AttrID attrID)
         {

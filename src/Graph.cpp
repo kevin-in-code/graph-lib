@@ -530,4 +530,32 @@ namespace kn
         return false;
     }
 
+    bool Graph::hasEdgeByIndices(std::size_t sourceIndex, std::size_t destinationIndex) const
+    {
+        if ((sourceIndex < vertices.size()) && (destinationIndex < vertices.size()))
+        {
+            const VertexInfo* u = &vertices[sourceIndex];
+            const VertexInfo* v = &vertices[destinationIndex];
+
+            VertexID sourceID = u->id;
+            VertexID destinationID = v->id;
+
+            if (u->outDegree <= v->inDegree)
+            {
+                for (const EdgeInfo* e = u->sourceEdges; e; e = e->nextFromSource)
+                {
+                    if ((e->v == destinationID) && e->undirected) return true;
+                }
+            }
+            else
+            {
+                for (const EdgeInfo* e = v->destinationEdges; e; e = e->nextToDestination)
+                {
+                    if ((e->u == sourceID) && e->undirected) return true;
+                }
+            }
+        }
+        return false;
+    }
+
 }
