@@ -38,15 +38,15 @@ namespace kn
         for (std::size_t k = 0; k < (MT_N - MT_M); k++)
         {
             y = (x[k] & MT_X) | (x[k + 1] & MT_Y);
-            x[k] = x[k + MT_M] ^ MT_MAYBE_A(y);
+            x[k] = x[k + MT_M] ^ (y >> 1) ^ MT_MAYBE_A(y);
         }
         for (std::size_t k = MT_N - MT_M; k < MT_N - 1; k++)
         {
             y = (x[k] & MT_X) | (x[k + 1] & MT_Y);
-            x[k] = x[k - (MT_N - MT_M)] ^ MT_MAYBE_A(y);
+            x[k] = x[MT_M + k - MT_N] ^ (y >> 1) ^ MT_MAYBE_A(y);
         }
         y = (x[MT_N - 1] & MT_X) | (x[0] & MT_Y);
-        x[MT_N - 1] = x[MT_M - 1] ^ MT_MAYBE_A(y);
+        x[MT_N - 1] = x[MT_M - 1] ^ (y >> 1) ^ MT_MAYBE_A(y);
         next = 0;
         Random::flush();
     }
