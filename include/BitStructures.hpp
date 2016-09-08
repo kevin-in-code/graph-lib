@@ -276,6 +276,9 @@ namespace kn
 
         void clear();
         void fill();
+        void fillBefore(std::size_t value);
+        void fillAfter(std::size_t value);
+
         void copy(const IntegerSet& b);
 
         std::size_t count() const;

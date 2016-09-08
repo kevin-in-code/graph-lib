@@ -170,6 +170,36 @@ namespace kn
         sanitiseHighBits();
     }
 
+    void IntegerSet::fillBefore(std::size_t value)
+    {
+        std::size_t index = value / 64;
+        for (std::size_t k = 0; k < index; k++)
+        {
+            array[k] = ~0;
+        }
+        if (index < arraySize)
+        {
+            uint64_t mask = singleBit(value % 64) - 1;
+            array[index] |= mask;
+            sanitiseHighBits();
+        }
+    }
+
+    void IntegerSet::fillAfter(std::size_t value)
+    {
+        std::size_t index = value / 64;
+        if (index < arraySize)
+        {
+            uint64_t mask = ((~(uint64_t)0) << (value % 64)) << 1;
+            array[index] |= mask;
+            for (std::size_t k = index + 1; k < arraySize; k++)
+            {
+                array[k] = ~0;
+            }
+            sanitiseHighBits();
+        }
+    }
+
     void IntegerSet::copy(const IntegerSet& b)
     {
         assert(maxCardinality == b.maxCardinality);
