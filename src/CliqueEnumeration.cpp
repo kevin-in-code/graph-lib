@@ -5,7 +5,8 @@
 
 namespace kn
 {
-//#define ENABLE_PRETTY_PRINT
+    // Uncomment to enable pretty printing
+    //#define ENABLE_PRETTY_PRINT
 
     /// The common context for many clique enumerators in the BronKerbosch family.
 
@@ -167,6 +168,7 @@ namespace kn
             else
             {
                 /// cut-off: sub-maximal clique
+                receiver->cutOffCounter++;
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 receiver->onCutOff();
 #endif

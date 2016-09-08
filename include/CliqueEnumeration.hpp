@@ -27,16 +27,19 @@ namespace kn
         friend class BKSearch;
         uint64_t cliqueCounter = 0;
         uint64_t recursionCounter = 0;
+        uint64_t cutOffCounter = 0;
 
     public:
         void reset()
         {
             cliqueCounter = 0;
             recursionCounter = 0;
+            cutOffCounter = 0;
         }
 
         uint64_t cliqueCount() { return cliqueCounter; }
         uint64_t recursionCount() { return recursionCounter; }
+        uint64_t cutOffCount() { return cutOffCounter; }
 
         virtual void onClear() {}
 
