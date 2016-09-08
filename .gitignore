@@ -31,3 +31,8 @@
 # Other files
 *.sdf
 
+# Build directories
+bin/
+lib/
+build/
+vs2015/
