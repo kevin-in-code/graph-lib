@@ -85,6 +85,7 @@ namespace kn
 
         std::unordered_map<VertexID, VertexID> map;
         Vertex oV, oU;
+        Edge e;
         for (std::size_t index = 0; index < permutation.size(); index++)
         {
             other.getVertexByIndex(permutation[index], oV);
@@ -94,6 +95,25 @@ namespace kn
             map.insert(std::make_pair(oV.id, v));
         }
 
+        for (auto it = other.vertexIterator(); it.next(oV); )
+        {
+            VertexID v = map[oV.id];
+
+            for (auto it2 = other.enteringEdgeIterator(oV.id); it2.next(e); )
+            {
+                VertexID u = map[e.u];
+
+                if (!e.undirected || (u < v))
+                {
+                    if (e.undirected)
+                        this->addEdge(u, v, e.attrID);
+                    else
+                        this->addArc(u, v, e.attrID);
+                }
+            }
+        }
+
+        /*
         for (auto it = other.vertexIterator(); it.next(oV); )
         {
             VertexID v = map[oV.id];
@@ -112,6 +132,7 @@ namespace kn
                 }
             }
         }
+        */
     }
 
     Graph::~Graph()
