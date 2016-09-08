@@ -59,8 +59,8 @@ namespace kn
                 K.push_back(conflicts);
             }
 
-            this->pool = new IntegerSet[4 * (1+numVertices)];
-            for (std::size_t i = 0; i < 4 * (1+numVertices); i++)
+            this->pool = new IntegerSet[4 * (1+numVertices) + 3];
+            for (std::size_t i = 0; i < 4 * (1+numVertices) + 3; i++)
             {
                 this->pool[i].setMaxCardinality(numVertices);
             }
@@ -114,6 +114,73 @@ namespace kn
     public:
         BKSearch(const Graph* graph, CliqueReceiver* receiver) :
             Context(graph, receiver) {}
+
+        void enumerateCliques(bool ordered = false)
+        {
+            if (!ordered)
+            {
+                IntegerSet* S = reserveSet();
+                IntegerSet* P = reserveSet();
+                IntegerSet* X = reserveSet();
+
+                S->clear();
+                P->fill();
+                X->clear();
+
+                receiver->reset();
+                receiver->onClear();
+                apply(S, P, X);
+                receiver->onComplete();
+
+                // consumed by apply: S, P, X
+            }
+            else
+            {
+                receiver->reset();
+                receiver->onClear();
+                std::size_t n = graph->countVertices();
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                bool grouped = (n > 1);
+                if (grouped) receiver->onOpenGroup();
+                bool first = true;
+                Graph::Vertex vertex;
+#endif
+
+                for (std::size_t k = 0; k < n; k++)
+                {
+                    IntegerSet* S = reserveSet();
+                    IntegerSet* P = reserveSet();
+                    IntegerSet* X = reserveSet();
+
+                    S->clear();
+                    P->clear();
+                    X->clear();
+
+                    S->add(k);
+                    P->fillBefore(k);
+                    X->fillAfter(k);
+                    P->intersectWith(N[k]);
+                    X->intersectWith(N[k]);
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    if (!first) receiver->onPartition();
+                    first = false;
+                    graph->getVertexByIndex(k, vertex);
+                    receiver->onVertex(k, vertex.attrID);
+#endif
+
+                    apply(S, P, X);
+                    // consumed by apply: S, P, X
+                }
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                if (first) receiver->onCutOff();
+                if (grouped) receiver->onCloseGroup();
+#endif
+                receiver->onComplete();
+            }
+        }
             
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
@@ -415,36 +482,14 @@ namespace kn
     {
         BKSearch_Tomita alg(graph, receiver);
 
-        IntegerSet* S = alg.reserveSet();
-        IntegerSet* P = alg.reserveSet();
-        IntegerSet* X = alg.reserveSet();
-
-        S->clear();
-        P->fill();
-        X->clear();
-
-        receiver->reset();
-        receiver->onClear();
-        alg.apply(S, P, X);
-        receiver->onComplete();
+        alg.enumerateCliques();
     }
 
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver)
     {
         BKSearch_Naude alg(graph, receiver);
 
-        IntegerSet* S = alg.reserveSet();
-        IntegerSet* P = alg.reserveSet();
-        IntegerSet* X = alg.reserveSet();
-
-        S->clear();
-        P->fill();
-        X->clear();
-
-        receiver->reset();
-        receiver->onClear();
-        alg.apply(S, P, X);
-        receiver->onComplete();
+        alg.enumerateCliques();
     }
 
     void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver)
@@ -452,20 +497,7 @@ namespace kn
         std::unique_ptr<Graph> permutedGraph(maxDegreeFirst(graph));
         BKSearch_Segundo alg(permutedGraph.get(), receiver);
 
-        //BKSearch_Segundo alg(graph, receiver);
-
-        IntegerSet* S = alg.reserveSet();
-        IntegerSet* P = alg.reserveSet();
-        IntegerSet* X = alg.reserveSet();
-
-        S->clear();
-        P->fill();
-        X->clear();
-
-        receiver->reset();
-        receiver->onClear();
-        alg.apply(S, P, X);
-        receiver->onComplete();
+        alg.enumerateCliques();
     }
 
 }
