@@ -11,6 +11,7 @@ filter "configurations:Debug*"
 filter "configurations:Release*"
    defines { "NDEBUG" }
    optimize "On"
+   flags { "Symbols" }
 
 filter { "platforms:Win64" }
    system "Windows"
