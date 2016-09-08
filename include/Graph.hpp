@@ -176,6 +176,13 @@ namespace kn
             return edgeIDtoSourceID.size();
         }
 
+        double edgeDensity() const
+        {
+            uint64_t n = countVertices();
+            uint64_t e = countEdges();
+            return e / ((n * (n - 1)) * 0.5);
+        }
+
         VertexIterator vertexIterator() const
         {
             return VertexIterator(this);
