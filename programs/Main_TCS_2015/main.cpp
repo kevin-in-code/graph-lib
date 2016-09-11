@@ -22,17 +22,6 @@
 
 using namespace kn;
 
-class CountingCliqueReceiver : public CliqueReceiver
-{
-public:
-    uint64_t count = 0;
-
-    virtual void onClique(const Graph& graph, const IntegerSet& vertices)
-    {
-        count++;
-    }
-};
-
 typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 
 void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t maxCount, bool diffuseError)
@@ -52,7 +41,7 @@ void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t m
     for (uint32_t c = 0; c < count; c++)
     {
         Graph* g = ErdosRenyi::Gnm(r, n, m, nullptr, nullptr);
-        CountingCliqueReceiver cr;
+        CliqueReceiver cr;
         StopWatch sw;
         sw.start();
         ce(g, &cr);
@@ -60,7 +49,7 @@ void testCase(Random& r, CliqueEnumerator ce, uint32_t n, uint32_t d, uint32_t m
         delete g;
 
         double seconds = sw.elapsedSeconds();
-        std::cout << n << "," << d << "," << (c + 1) << "," << cr.count << "," << seconds << std::endl;
+        std::cout << n << "," << d << "," << (c + 1) << "," << cr.cliqueCount() << "," << seconds << std::endl;
 
         if (diffuseError)
         {
@@ -88,16 +77,16 @@ void test(CliqueEnumerator ce, uint32_t seed, uint32_t maxCount, bool diffuseErr
 
 int main(int argc, const char* argv[])
 {
-    if ((argc < 3) || ((strcmp(argv[1], "tomita") != 0) && (strcmp(argv[1], "naude") != 0)))
+    if ((argc < 3) || ((strcmp(argv[1], "tomita-et-al") != 0) && (strcmp(argv[1], "naude") != 0)))
     {
-        std::cout << "usage: program (tomita|naude) seed [maxcount [diffuse]]" << std::endl;
+        std::cout << "usage: program (tomita-et-al|naude) seed [maxcount [diffuse]]" << std::endl;
         std::cout << "  e.g. program tomita 123" << std::endl;
         std::cout << std::endl;
-        std::cout << " tomita     use Tomita et al. pivot selection" << std::endl;
-        std::cout << " naude      use Naude's pivot selection" << std::endl;
-        std::cout << " seed       integer, seed for Mersenne Twiser initialisation" << std::endl;
-        std::cout << " maxcount   integer, maximum sample size in any test case" << std::endl;
-        std::cout << " diffuse    yes or no, apply error diffusion to discretely selected densities" << std::endl;
+        std::cout << " tomita-et-al   use Tomita et al. pivot selection" << std::endl;
+        std::cout << " naude          use Naude's pivot selection" << std::endl;
+        std::cout << " seed           integer, seed for Mersenne Twiser initialisation" << std::endl;
+        std::cout << " maxcount       integer, maximum sample size in any test case" << std::endl;
+        std::cout << " diffuse        yes or no, apply error diffusion to discretely selected densities" << std::endl;
     }
     else
     {
@@ -111,7 +100,7 @@ int main(int argc, const char* argv[])
             distributeError = (strcmp(argv[4], "yes") == 0) || (strcmp(argv[4], "y") == 0);
         }
 
-        if (strcmp(argv[1], "tomita") == 0)
+        if (strcmp(argv[1], "tomita-et-al") == 0)
         {
             test(&AllCliques_Tomita, seed, maxCount, distributeError);
         }
