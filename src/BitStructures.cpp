@@ -140,7 +140,7 @@ namespace kn
         {
             uint64_t* newArray = new uint64_t[arraySize];
             assert(newArray);
-            for (std::size_t index = 0; index < arraySize; index++)
+            for (std::size_t index = 0; index < this->arraySize; index++)
             {
                 newArray[index] = array[index];
             }
