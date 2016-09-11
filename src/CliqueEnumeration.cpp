@@ -49,8 +49,8 @@ namespace kn
                 K.push_back(conflicts);
             }
 
-            this->pool = new IntegerSet[4 * (1+numVertices)];
-            for (std::size_t i = 0; i < 4 * (1+numVertices); i++)
+            this->pool = new IntegerSet[4 * (1+numVertices) + 3];
+            for (std::size_t i = 0; i < 4 * (1+numVertices) + 3; i++)
             {
                 this->pool[i].setMaxCardinality(numVertices);
             }
@@ -71,15 +71,6 @@ namespace kn
         {
             next--;
         }
-
-        /*
-        void releaseSet(IntegerSet* set)
-        {
-            next--;
-            if (next != set)
-                throw new std::exception();
-        }
-        */
 
         IntegerSet* intersect(IntegerSet* a, IntegerSet* b)
         {
@@ -104,9 +95,59 @@ namespace kn
     public:
         BKSearch(const Graph* graph, CliqueReceiver* receiver) :
             Context(graph, receiver) {}
+
+        void enumerateCliques(bool ordered = false)
+        {
+            if (!ordered)
+            {
+                IntegerSet* S = reserveSet();
+                IntegerSet* P = reserveSet();
+                IntegerSet* X = reserveSet();
+
+                S->clear();
+                P->fill();
+                X->clear();
+
+                receiver->reset();
+                receiver->onClear();
+                apply(S, P, X);
+                receiver->onComplete();
+
+                // consumed by apply: S, P, X
+            }
+            else
+            {
+                receiver->reset();
+                receiver->onClear();
+                std::size_t n = graph->countVertices();
+
+
+                for (std::size_t k = 0; k < n; k++)
+                {
+                    IntegerSet* S = reserveSet();
+                    IntegerSet* P = reserveSet();
+                    IntegerSet* X = reserveSet();
+
+                    S->clear();
+                    P->clear();
+                    X->clear();
+
+                    S->add(k);
+                    P->fillBefore(k);
+                    X->fillAfter(k);
+                    P->intersectWith(N[k]);
+                    X->intersectWith(N[k]);
+
+                    apply(S, P, X);
+                    // consumed by apply: S, P, X
+                }
+                receiver->onComplete();
+            }
+        }
             
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
+            receiver->recursionCounter++;
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
@@ -131,11 +172,13 @@ namespace kn
             if (X->isEmpty())
             {
                 /// maximal clique found
+                receiver->cliqueCounter++;
                 receiver->onClique(*graph, *S);
             }
             else
             {
                 /// cut-off: sub-maximal clique
+                receiver->cutOffCounter++;
             }
 
             this->releaseSet(); // Release X
@@ -305,34 +348,14 @@ namespace kn
     {
         BKSearch_Tomita alg(graph, receiver);
 
-        IntegerSet* S = alg.reserveSet();
-        IntegerSet* P = alg.reserveSet();
-        IntegerSet* X = alg.reserveSet();
-
-        S->clear();
-        P->fill();
-        X->clear();
-
-        receiver->onClear();
-        alg.apply(S, P, X);
-        receiver->onComplete();
+        alg.enumerateCliques();
     }
 
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver)
     {
         BKSearch_Naude alg(graph, receiver);
 
-        IntegerSet* S = alg.reserveSet();
-        IntegerSet* P = alg.reserveSet();
-        IntegerSet* X = alg.reserveSet();
-
-        S->clear();
-        P->fill();
-        X->clear();
-
-        receiver->onClear();
-        alg.apply(S, P, X);
-        receiver->onComplete();
+        alg.enumerateCliques();
     }
 
 }
