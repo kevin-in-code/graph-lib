@@ -30,16 +30,14 @@ namespace kn
             numVertices = graph->countVertices();
             for (std::size_t ui = 0; ui < numVertices; ui++)
             {
-                Graph::VertexID u = graph->getVertexID(ui);
                 IntegerSet neighbours(numVertices);
-                for (std::size_t vi = 0; vi < numVertices; vi++)
+                Graph::Vertex u;
+                Graph::Edge e;
+                graph->getVertexByIndex(ui, u);
+                for (auto it = graph->exitingEdgeIterator(u.id); it.next(e); )
                 {
-                    if (ui == vi) continue;
-                    Graph::VertexID v = graph->getVertexID(vi);
-                    if (graph->hasEdge(u, v))
-                    {
-                        neighbours.add(v);
-                    }
+                    std::size_t vi = graph->getVertexIndex(e.v);
+                    if (ui != vi) neighbours.add(vi);
                 }
 
                 IntegerSet conflicts(neighbours);
