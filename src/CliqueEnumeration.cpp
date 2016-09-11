@@ -397,6 +397,67 @@ namespace kn
         }
     };
 
+    class BKSearch_Segundo : public BKSearch
+    {
+    public:
+        BKSearch_Segundo(const Graph* graph, CliqueReceiver* receiver) :
+            BKSearch(graph, receiver) {}
+
+        virtual IntegerSet* pivotConflict(IntegerSet* S, IntegerSet* P, IntegerSet* X)
+        {
+            if (!X->isEmpty())
+            {
+                std::size_t q = X->firstElement();
+                IntegerSet* Q = this->intersect(P, &K[q]);
+
+                return Q;
+            }
+            else
+            if (!P->isEmpty())
+            {
+                std::size_t q = P->firstElement();
+                IntegerSet* Q = this->intersect(P, &K[q]);
+
+                return Q;
+            }
+            else
+            {
+                return nullptr;
+            }
+        }
+    };
+
+
+    Graph* maxDegreeFirst(const Graph* graph)
+    {
+        Graph::Vertex vertex;
+        std::size_t n = graph->countVertices();
+        std::vector<Graph::VertexID> permutation(n);
+        IntegerSet avail(n);
+        avail.fill();
+
+        for (std::size_t index = permutation.size(); index > 0; index--)
+        {
+            std::size_t i = index - 1;
+            std::size_t highestDegree = 0;
+            std::size_t indexOfHighest = n;
+
+            for (auto it = avail.iterator(); it.hasNext(); )
+            {
+                std::size_t v = it.next();
+                graph->getVertexByIndex(v, vertex);
+                if ((indexOfHighest == n) || (vertex.outDegree >= highestDegree))
+                {
+                    highestDegree = vertex.outDegree;
+                    indexOfHighest = v;
+                }
+            }
+            avail.remove(indexOfHighest);
+            permutation[(n - 1) - i] = indexOfHighest;
+        }
+        return new Graph(*graph, permutation, true);
+    }
+
 
     void AllCliques_Tomita(const Graph* graph, CliqueReceiver* receiver)
     {
@@ -408,6 +469,14 @@ namespace kn
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver)
     {
         BKSearch_Naude alg(graph, receiver);
+
+        alg.enumerateCliques();
+    }
+
+    void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver)
+    {
+        std::unique_ptr<Graph> permutedGraph(maxDegreeFirst(graph));
+        BKSearch_Segundo alg(permutedGraph.get(), receiver);
 
         alg.enumerateCliques();
     }

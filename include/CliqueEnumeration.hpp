@@ -134,4 +134,6 @@ namespace kn
 
     void AllCliques_Naude(const Graph* graph, CliqueReceiver* receiver);
 
+    void AllCliques_Segundo(const Graph* graph, CliqueReceiver* receiver);
+
 }

@@ -140,6 +140,7 @@ struct CliqueEnumerationMethod
 };
 
 std::vector<CliqueEnumerationMethod> Methods = {
+    CliqueEnumerationMethod{ "segundo-et-al", "Segundo et al.", &AllCliques_Segundo },
     CliqueEnumerationMethod{ "tomita-et-al", "Tomita et al.", &AllCliques_Tomita },
     CliqueEnumerationMethod{ "naude", "Naude", &AllCliques_Naude }
 };
