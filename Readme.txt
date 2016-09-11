@@ -13,6 +13,7 @@ The code is organised as follows:
 Examples include:
     Main_TCS_2015       - experiments performed for my TCS 2015 publication
     CountMaximalCliques - a simple demonstration program
+    Benchmarks          - a collection of clique enumeration benchmarks
 
 The demonstration CountMaximalCliques program can apply clique enumeration to a
 graph loaded from a file.  The graph file must be in one of several common text
