@@ -69,7 +69,7 @@ namespace kn
             if (!onNewLine || force)
             {
                 std::cout << std::endl;
-                for (int t = 0; t < indentation; t++)
+                for (std::size_t t = 0; t < indentation; t++)
                 {
                     std::cout << " ";
                 }
