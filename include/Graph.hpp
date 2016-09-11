@@ -109,7 +109,7 @@ namespace kn
 
         Graph(const Graph& other, bool complement);
 
-        Graph(const Graph& other, const std::vector<VertexID>& permutation);
+        Graph(const Graph& other, const std::vector<VertexID>& permutation, bool reassignAttributes = false);
 
         virtual ~Graph();
 

@@ -78,17 +78,20 @@ namespace kn
         }
     }
 
-    Graph::Graph(const Graph& other, const std::vector<VertexID>& permutation)
+    Graph::Graph(const Graph& other, const std::vector<VertexID>& permutation, bool reassignAttributes)
     {
         nextVertexID = 0;
         nextEdgeID = 0;
 
         std::unordered_map<VertexID, VertexID> map;
-        Vertex oV, oU;
+        Vertex oV;
+        Edge e;
         for (std::size_t index = 0; index < permutation.size(); index++)
         {
             other.getVertexByIndex(permutation[index], oV);
-            VertexID v = this->addVertex(oV.attrID);
+            AttrID attr = oV.attrID;
+            if (reassignAttributes) attr = permutation[index] + 1;
+            VertexID v = this->addVertex(attr);
             map.insert(std::make_pair(oV.id, v));
         }
 
@@ -96,12 +99,11 @@ namespace kn
         {
             VertexID v = map[oV.id];
 
-            for (auto it2 = other.vertexIterator(); it2.next(oU); )
+            for (auto it2 = other.enteringEdgeIterator(oV.id); it2.next(e); )
             {
-                VertexID u = map[oU.id];
+                VertexID u = map[e.u];
 
-                Edge e;
-                if (other.getEdge(u, v, e) && (!e.undirected || (u < v)))
+                if (!e.undirected || (u < v))
                 {
                     if (e.undirected)
                         this->addEdge(u, v, e.attrID);
