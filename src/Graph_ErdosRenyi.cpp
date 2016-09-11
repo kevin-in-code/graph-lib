@@ -19,7 +19,7 @@ namespace kn
             {
                 for (uint32_t u = 0; u < v; u++)
                 {
-                    if (r.nextDoubleCO() >= p)
+                    if (r.nextDoubleCO() < p)
                     {
                         g->addEdge(u, v, r.nextUInt(numEdgeAttributes));
                     }
