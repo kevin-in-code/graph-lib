@@ -110,7 +110,12 @@ namespace kn
 
                 receiver->reset();
                 receiver->onClear();
-                apply(S, P, X);
+                apply2(S, P, X);
+
+                this->releaseSet(); // Release X
+                this->releaseSet(); // Release P
+                this->releaseSet(); // Release S
+
                 receiver->onComplete();
 
                 // consumed by apply: S, P, X
@@ -151,8 +156,12 @@ namespace kn
                     receiver->onVertex(k, vertex.attrID);
 #endif
 
-                    apply(S, P, X);
+                    apply2(S, P, X);
                     // consumed by apply: S, P, X
+
+                    this->releaseSet(); // Release X
+                    this->releaseSet(); // Release P
+                    this->releaseSet(); // Release S
                 }
 
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
@@ -225,6 +234,78 @@ namespace kn
             this->releaseSet(); // Release X
             this->releaseSet(); // Release P
             this->releaseSet(); // Release S
+        }
+
+        void apply2(IntegerSet* S, IntegerSet* P, IntegerSet* X)
+        {
+            receiver->recursionCounter++;
+            if (P->isEmpty())
+            {
+                if (X->isEmpty())
+                {
+                    /// maximal clique found
+                    receiver->cliqueCounter++;
+                    receiver->onClique(*graph, *S);
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    receiver->onOk();
+#endif
+                }
+                else
+                {
+                    /// cut-off: sub-maximal clique
+                    receiver->cutOffCounter++;
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    receiver->onCutOff();
+#endif
+                }
+            }
+            else
+            {
+                IntegerSet* Q = pivotConflict(S, P, X);
+                if (Q)
+                {
+                    bool first = true;
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    bool grouped = (Q->countLimit(2) > 1);
+                    if (grouped) receiver->onOpenGroup();
+                    bool first = true;
+                    Graph::Vertex vertex;
+#endif
+
+                    auto it = Q->iterator();
+                    while (it.hasNext())
+                    {
+                        std::size_t v = it.next();
+                        P->remove(v);
+                        first = false;
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                        if (!first) receiver->onPartition();
+                        first = false;
+                        graph->getVertexByIndex(v, vertex);
+                        receiver->onVertex(v, vertex.attrID);
+#endif
+
+                        IntegerSet* s2 = this->insert(S, v);
+                        IntegerSet* p2 = this->intersect(P, &N[v]);
+                        IntegerSet* x2 = this->intersect(X, &N[v]);
+
+                        apply2(s2, p2, x2);
+
+                        this->releaseSet(); // Release X
+                        this->releaseSet(); // Release P
+                        this->releaseSet(); // Release S
+
+                        X->add(v);
+                    }
+                    if (!first) receiver->nonEmptyPivotSetCounter++;
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    if (first) receiver->onCutOff();
+                    if (grouped) receiver->onCloseGroup();
+#endif
+                    this->releaseSet(); // Release Q
+                }
+            }
         }
 
         virtual IntegerSet* pivotConflict(IntegerSet* S, IntegerSet* P, IntegerSet* X) = 0;
