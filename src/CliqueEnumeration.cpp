@@ -5,6 +5,8 @@
 
 namespace kn
 {
+    // Uncomment to enable pretty printing
+    //#define ENABLE_PRETTY_PRINT
 
     /// The common context for many clique enumerators in the BronKerbosch family.
 
@@ -119,6 +121,12 @@ namespace kn
                 receiver->onClear();
                 std::size_t n = graph->countVertices();
 
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                bool grouped = (n > 1);
+                if (grouped) receiver->onOpenGroup();
+                bool first = true;
+                Graph::Vertex vertex;
+#endif
 
                 for (std::size_t k = 0; k < n; k++)
                 {
@@ -136,9 +144,21 @@ namespace kn
                     P->intersectWith(N[k]);
                     X->intersectWith(N[k]);
 
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    if (!first) receiver->onPartition();
+                    first = false;
+                    graph->getVertexByIndex(k, vertex);
+                    receiver->onVertex(k, vertex.attrID);
+#endif
+
                     apply(S, P, X);
                     // consumed by apply: S, P, X
                 }
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                if (first) receiver->onCutOff();
+                if (grouped) receiver->onCloseGroup();
+#endif
                 receiver->onComplete();
             }
         }
@@ -149,11 +169,24 @@ namespace kn
             IntegerSet* Q = pivotConflict(S, P, X);
             if (Q)
             {
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                bool grouped = (Q->countLimit(2) > 1);
+                if (grouped) receiver->onOpenGroup();
+                bool first = true;
+                Graph::Vertex vertex;
+#endif
+
                 auto it = Q->iterator();
                 while (it.hasNext())
                 {
                     std::size_t v = it.next();
                     P->remove(v);
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                    if (!first) receiver->onPartition();
+                    first = false;
+                    graph->getVertexByIndex(v, vertex);
+                    receiver->onVertex(v, vertex.attrID);
+#endif
 
                     IntegerSet* s2 = this->insert(S, v);
                     IntegerSet* p2 = this->intersect(P, &N[v]);
@@ -164,6 +197,10 @@ namespace kn
                     X->add(v);
                 }
 
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                if (first) receiver->onCutOff();
+                if (grouped) receiver->onCloseGroup();
+#endif
                 this->releaseSet(); // Release Q
             }
             else
@@ -172,11 +209,17 @@ namespace kn
                 /// maximal clique found
                 receiver->cliqueCounter++;
                 receiver->onClique(*graph, *S);
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                receiver->onOk();
+#endif
             }
             else
             {
                 /// cut-off: sub-maximal clique
                 receiver->cutOffCounter++;
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                receiver->onCutOff();
+#endif
             }
 
             this->releaseSet(); // Release X
@@ -247,6 +290,9 @@ namespace kn
         search:
             std::size_t q = numVertices; // an initial value which is not a valid vertex
             std::size_t least = numVertices + 1; // not infinity, but large enough
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+            Graph::Vertex vertex;
+#endif
 
             if (!X->isEmpty())
             {
@@ -271,6 +317,11 @@ namespace kn
                                 S->add(w);
                                 P->intersectWith(N[w]);
                                 X->intersectWith(N[w]);
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                                graph->getVertexByIndex(w, vertex);
+                                receiver->onVertex(w, vertex.attrID);
+#endif
 
                                 /// Very important!
                                 /// We are iterating through X, and we have potentially just modified X.
@@ -312,6 +363,11 @@ namespace kn
                                 S->add(v);
                                 P->intersectWith(N[v]);
                                 X->intersectWith(N[v]);
+
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                                graph->getVertexByIndex(v, vertex);
+                                receiver->onVertex(v, vertex.attrID);
+#endif
 
                                 /// Very important!
                                 /// We are iterating through P, and we have potentially just modified P.
