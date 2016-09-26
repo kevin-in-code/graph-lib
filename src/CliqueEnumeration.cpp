@@ -304,6 +304,27 @@ namespace kn
                     if (grouped) receiver->onCloseGroup();
 #endif
                     this->releaseSet(); // Release Q
+                /* We must check whether P has become empty by in-place processing when pivoting */
+                else
+                if (P->isEmpty())
+                {
+                    if (X->isEmpty())
+                    {
+                        /// maximal clique found
+                        receiver->cliqueCounter++;
+                        receiver->onClique(*graph, *S);
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                        receiver->onOk();
+#endif
+                    }
+                    else
+                    {
+                        /// cut-off: sub-maximal clique
+                        receiver->cutOffCounter++;
+#if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
+                        receiver->onCutOff();
+#endif
+                    }
                 }
             }
         }
