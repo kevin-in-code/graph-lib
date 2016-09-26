@@ -88,6 +88,9 @@ namespace kn
         }
     };
 
+#if !defined(BK_APPLY)
+#   define BK_APPLY apply
+#endif
 
     /// The base class for a BronKerbosch clique enumerator.
     class BKSearch : public Context
@@ -110,7 +113,7 @@ namespace kn
 
                 receiver->reset();
                 receiver->onClear();
-                apply2(S, P, X);
+                BK_APPLY(S, P, X);
 
                 this->releaseSet(); // Release X
                 this->releaseSet(); // Release P
@@ -156,7 +159,7 @@ namespace kn
                     receiver->onVertex(k, vertex.attrID);
 #endif
 
-                    apply2(S, P, X);
+                    BK_APPLY(S, P, X);
                     // consumed by apply: S, P, X
 
                     this->releaseSet(); // Release X
@@ -236,7 +239,7 @@ namespace kn
             }
         }
 
-        void apply2(IntegerSet* S, IntegerSet* P, IntegerSet* X)
+        void applyInConventionalForm(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
             receiver->recursionCounter++;
             if (P->isEmpty())
@@ -289,7 +292,8 @@ namespace kn
                         IntegerSet* p2 = this->intersect(P, &N[v]);
                         IntegerSet* x2 = this->intersect(X, &N[v]);
 
-                        apply2(s2, p2, x2);
+                        applyInConventionalForm(s2, p2, x2);
+                        callCount++;
 
                         this->releaseSet(); // Release X
                         this->releaseSet(); // Release P
