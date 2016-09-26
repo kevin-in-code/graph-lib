@@ -115,9 +115,9 @@ namespace kn
                 receiver->onClear();
                 BK_APPLY(S, P, X);
 
-                this->releaseSet(); // Release X
-                this->releaseSet(); // Release P
-                this->releaseSet(); // Release S
+                releaseSet(); // Release X
+                releaseSet(); // Release P
+                releaseSet(); // Release S
 
                 receiver->onComplete();
 
@@ -162,9 +162,9 @@ namespace kn
                     BK_APPLY(S, P, X);
                     // consumed by apply: S, P, X
 
-                    this->releaseSet(); // Release X
-                    this->releaseSet(); // Release P
-                    this->releaseSet(); // Release S
+                    releaseSet(); // Release X
+                    releaseSet(); // Release P
+                    releaseSet(); // Release S
                 }
 
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
@@ -174,7 +174,7 @@ namespace kn
                 receiver->onComplete();
             }
         }
-            
+
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
             receiver->recursionCounter++;
@@ -194,6 +194,7 @@ namespace kn
                 {
                     std::size_t v = it.next();
                     P->remove(v);
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                     if (callCount > 0) receiver->onPartition();
                     graph->getVertexByIndex(v, vertex);
@@ -220,7 +221,8 @@ namespace kn
                 if (callCount == 0) receiver->onCutOff();
                 if (grouped) receiver->onCloseGroup();
 #endif
-                this->releaseSet(); // Release Q
+
+                releaseSet(); // Release Q
             }
             else
             if (X->isEmpty())
@@ -228,6 +230,7 @@ namespace kn
                 /// maximal clique found
                 receiver->cliqueCounter++;
                 receiver->onClique(*graph, *S);
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 receiver->onOk();
 #endif
@@ -236,6 +239,7 @@ namespace kn
             {
                 /// cut-off: sub-maximal clique
                 receiver->cutOffCounter++;
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 receiver->onCutOff();
 #endif
@@ -252,6 +256,7 @@ namespace kn
                     /// maximal clique found
                     receiver->cliqueCounter++;
                     receiver->onClique(*graph, *S);
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                     receiver->onOk();
 #endif
@@ -260,6 +265,7 @@ namespace kn
                 {
                     /// cut-off: sub-maximal clique
                     receiver->cutOffCounter++;
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                     receiver->onCutOff();
 #endif
@@ -297,9 +303,9 @@ namespace kn
                         applyInConventionalForm(s2, p2, x2);
                         callCount++;
 
-                        this->releaseSet(); // Release X
-                        this->releaseSet(); // Release P
-                        this->releaseSet(); // Release S
+                        releaseSet(); // Release X
+                        releaseSet(); // Release P
+                        releaseSet(); // Release S
 
                         X->add(v);
                     }
@@ -310,7 +316,8 @@ namespace kn
                     if (callCount == 0) receiver->onCutOff();
                     if (grouped) receiver->onCloseGroup();
 #endif
-                    this->releaseSet(); // Release Q
+                    releaseSet(); // Release Q
+                }
                 /* We must check whether P has become empty by in-place processing when pivoting */
                 else
                 if (P->isEmpty())
