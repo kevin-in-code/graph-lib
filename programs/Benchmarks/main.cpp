@@ -171,11 +171,96 @@ std::string formatText(std::string name, int width)
 }
 
 
+void benchmark(std::ostream& fout, const std::string& goal, int level, bool toConsole)
+{
+    fout << "method, benchmark, num_cliques, num_rec_calls, num_branches, seconds" << std::endl;
+    if (toConsole) std::cout << "method, benchmark, num_cliques, num_rec_calls, num_branches, seconds" << std::endl;
+    for (std::size_t m = 0; m < Methods.size(); m++)
+    {
+        CliqueEnumerationMethod cm = Methods[m];
+
+        if ((goal != "") && (goal != cm.handle)) continue;
+
+        for (std::size_t t = 0; t < FixedBenchmarks.size(); t++)
+        {
+            if (FixedBenchmarks[t].level <= level)
+            {
+                GraphLoader loader(selectPathTo(FixedBenchmarks[t].filename));
+
+                if (loader.isOpen())
+                {
+                    Graph* g = loader.loadDIMACSB();
+
+                    CliqueReceiver cr;
+                    StopWatch sw;
+
+                    sw.start();
+                    cm.enumerator(g, &cr);
+                    sw.stop();
+
+                    double seconds = sw.elapsedSeconds();
+                    fout << cm.handle << ", " << FixedBenchmarks[t].name << ", " << cr.cliqueCount() << ", " << cr.recursionCount() << ", " << cr.branchCount() << ", " << formatDouble(seconds, 5) << std::endl;
+                    if (toConsole) std::cout << cm.handle << ", " << FixedBenchmarks[t].name << ", " << cr.cliqueCount() << ", " << cr.recursionCount() << ", " << cr.branchCount() << ", " << formatDouble(seconds, 5) << std::endl;
+
+                    delete g;
+                }
+            }
+        }
+
+        // A fixed seed allows direct comparison between different algorithms.
+        // There is a high amount of variance in terms of number of maximal cliques in random graphs, so this is actually quite important.
+        uint32_t seed = 1234567;
+
+        //uint32_t seed = (uint32_t)time(NULL);
+
+        MersenneTwister random(seed);
+        for (std::size_t t = 0; t < SyntheticBenchmarks.size(); t++)
+        {
+            if (SyntheticBenchmarks[t].level <= level)
+            {
+                const int N = 10;
+                uint64_t numCliques = 0;
+                uint64_t numCalls = 0;
+                uint64_t numBranches = 0;
+                double numSeconds = 0.0;
+                for (int k = 0; k < N; k++)
+                {
+                    Graph* g = ErdosRenyi::Gnp(random, SyntheticBenchmarks[t].n, SyntheticBenchmarks[t].p, nullptr, nullptr);
+
+                    CliqueReceiver cr;
+                    StopWatch sw;
+
+                    sw.start();
+                    cm.enumerator(g, &cr);
+                    sw.stop();
+
+                    double seconds = sw.elapsedSeconds();
+
+                    numCliques += cr.cliqueCount();
+                    numCalls += cr.recursionCount();
+                    numBranches += cr.branchCount();
+                    numSeconds += seconds;
+
+                    delete g;
+                }
+
+                uint64_t avgCliques = numCliques / N;
+                uint64_t avgCalls = numCalls / N;
+                uint64_t avgNonEmptyPivots = numBranches / N;
+                double avgSeconds = numSeconds / N;
+                fout << cm.handle << ", " << "Gnp(n=" << SyntheticBenchmarks[t].n << "; p=" << formatDouble(SyntheticBenchmarks[t].p, 3) << "), " << avgCliques << ", " << avgCalls << ", " << avgNonEmptyPivots << ", " << formatDouble(avgSeconds, 5) << std::endl;
+                if (toConsole) std::cout << cm.handle << ", " << "Gnp(n=" << SyntheticBenchmarks[t].n << "; p=" << formatDouble(SyntheticBenchmarks[t].p, 3) << "), " << avgCliques << ", " << avgCalls << ", " << avgNonEmptyPivots << ", " << formatDouble(avgSeconds, 5) << std::endl;
+            }
+        }
+    }
+}
+
+
 int main(int argc, const char* argv[])
 {
     if ((argc < 2) || (!validMethod(argv[1]) && (strcmp(argv[1], "all") != 0)))
     {
-        std::cout << "usage: program algorithm [level]" << std::endl;
+        std::cout << "usage: program algorithm [level [-o filename] [--pause]]" << std::endl;
         std::cout << "  e.g. program tomita-et-al" << std::endl;
         std::cout << std::endl;
         for (auto it = Methods.begin(); it != Methods.end(); it++)
@@ -191,7 +276,39 @@ int main(int argc, const char* argv[])
     else
     {
         int level = 2;
-        if (argc >= 3) level = atoi(argv[2]);
+        const char* filename = nullptr;
+        bool pause = false;
+
+        if (argc >= 3)
+        {
+            level = atoi(argv[2]);
+            for (int c = 3; c < argc; c++)
+            {
+                if ((strcmp(argv[c], "-p") == 0) || (strcmp(argv[c], "--pause") == 0))
+                {
+                    pause = true;
+                }
+                else
+                if (strcmp(argv[c], "-o") == 0)
+                {
+                    if (c + 1 < argc)
+                    {
+                        filename = argv[c + 1];
+                        c++;
+                    }
+                    else
+                    {
+                        std::cout << "Fatal error: argument -o given without a file name" << std::endl;
+                        return -1;
+                    }
+                }
+                else
+                {
+                    std::cout << "Fatal error: unrecognised argument (" << argv[c] << ")" << std::endl;
+                    return -1;
+                }
+            }
+        }
 
         for (std::size_t t = 0; t < FixedBenchmarks.size(); t++)
         {
@@ -216,86 +333,25 @@ int main(int argc, const char* argv[])
             goal = "";
         }
 
-        std::string line;
-        std::cout << "Ready to start. Press <enter> to begin." << std::endl;
-        std::getline(std::cin, line);
-
-        std::cout << "method, benchmark, num_cliques, num_rec_calls, num_branches, seconds" << std::endl;
-        for (std::size_t m = 0; m < Methods.size(); m++)
+        if (pause)
         {
-            CliqueEnumerationMethod cm = Methods[m];
-
-            if ((goal != "") && (goal != cm.handle)) continue;
-
-            for (std::size_t t = 0; t < FixedBenchmarks.size(); t++)
-            {
-                if (FixedBenchmarks[t].level <= level)
-                {
-                    GraphLoader loader(selectPathTo(FixedBenchmarks[t].filename));
-
-                    if (loader.isOpen())
-                    {
-                        Graph* g = loader.loadDIMACSB();
-
-                        CliqueReceiver cr;
-                        StopWatch sw;
-
-                        sw.start();
-                        cm.enumerator(g, &cr);
-                        sw.stop();
-
-                        double seconds = sw.elapsedSeconds();
-                        std::cout << cm.handle << ", " << FixedBenchmarks[t].name << ", " << cr.cliqueCount() << ", " << cr.recursionCount() << ", " << cr.branchCount() << ", " << formatDouble(seconds, 5) << std::endl;
-
-                        delete g;
-                    }
-                }
-            }
-
-            // A fixed seed allows direct comparison between different algorithms.
-            // There is a high amount of variance in terms of number of maximal cliques in random graphs, so this is actually quite important.
-            uint32_t seed = 1234567;
-
-            //uint32_t seed = (uint32_t)time(NULL);
-
-            MersenneTwister random(seed);
-            for (std::size_t t = 0; t < SyntheticBenchmarks.size(); t++)
-            {
-                if (SyntheticBenchmarks[t].level <= level)
-                {
-                    const int N = 10;
-                    uint64_t numCliques = 0;
-                    uint64_t numCalls = 0;
-                    uint64_t numBranches = 0;
-                    double numSeconds = 0.0;
-                    for (int k = 0; k < N; k++)
-                    {
-                        Graph* g = ErdosRenyi::Gnp(random, SyntheticBenchmarks[t].n, SyntheticBenchmarks[t].p, nullptr, nullptr);
-
-                        CliqueReceiver cr;
-                        StopWatch sw;
-
-                        sw.start();
-                        cm.enumerator(g, &cr);
-                        sw.stop();
-
-                        double seconds = sw.elapsedSeconds();
-
-                        numCliques += cr.cliqueCount();
-                        numCalls += cr.recursionCount();
-                        numBranches += cr.branchCount();
-                        numSeconds += seconds;
-
-                        delete g;
-                    }
-
-                    uint64_t avgCliques = numCliques / N;
-                    uint64_t avgCalls = numCalls / N;
-                    uint64_t avgNonEmptyPivots = numBranches / N;
-                    double avgSeconds = numSeconds / N;
-                    std::cout << cm.handle << ", " << "Gnp(n=" << SyntheticBenchmarks[t].n << "; p=" << formatDouble(SyntheticBenchmarks[t].p, 3) << "), " << avgCliques << ", " << avgCalls << ", " << avgNonEmptyPivots << ", " << formatDouble(avgSeconds, 5) << std::endl;
-                }
-            }
+            std::string line;
+            std::cout << "Ready to start. Press <enter> to begin." << std::endl;
+            std::getline(std::cin, line);
         }
+
+        if (filename != nullptr)
+        {
+            std::cout << "Writing results to " << filename << " as well as console." << std::endl << std::endl;
+        }
+
+        std::ostream* fp = &std::cout;
+        std::ofstream fout;
+        if (filename != nullptr)
+        {
+            fout.open(filename);
+            fp = &fout;
+        }
+        benchmark(*fp, goal, level, (filename != nullptr));
     }
 }
