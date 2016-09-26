@@ -32,18 +32,6 @@ typedef PrettyPrintCliqueReceiver TheCliqueReceiver;
 
 typedef void(*CliqueEnumerator)(const Graph* g, CliqueReceiver* cr);
 
-void test(CliqueEnumerator ce, const Graph& graph)
-{
-    TheCliqueReceiver cr;
-    StopWatch sw;
-    sw.start();
-    ce(&graph, &cr);
-    sw.stop();
-
-    double seconds = sw.elapsedSeconds();
-    std::cout << cr.cliqueCount() << " cliques, " << seconds << " seconds, " << cr.recursionCount() << " recursive calls" << std::endl;
-}
-
 struct FixedBenchmark
 {
     std::string name;
