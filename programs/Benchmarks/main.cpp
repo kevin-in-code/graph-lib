@@ -216,7 +216,11 @@ int main(int argc, const char* argv[])
             goal = "";
         }
 
-        std::cout << "method, benchmark, num_cliques, num_rec_calls, non_empty_pivot, seconds" << std::endl;
+        std::string line;
+        std::cout << "Ready to start. Press <enter> to begin." << std::endl;
+        std::getline(std::cin, line);
+
+        std::cout << "method, benchmark, num_cliques, num_rec_calls, num_branches, seconds" << std::endl;
         for (std::size_t m = 0; m < Methods.size(); m++)
         {
             CliqueEnumerationMethod cm = Methods[m];
@@ -241,7 +245,7 @@ int main(int argc, const char* argv[])
                         sw.stop();
 
                         double seconds = sw.elapsedSeconds();
-                        std::cout << cm.handle << ", " << FixedBenchmarks[t].name << ", " << cr.cliqueCount() << ", " << cr.recursionCount() << ", " << cr.nonEmptyPivotSetCount() << ", " << formatDouble(seconds, 5) << std::endl;
+                        std::cout << cm.handle << ", " << FixedBenchmarks[t].name << ", " << cr.cliqueCount() << ", " << cr.recursionCount() << ", " << cr.branchCount() << ", " << formatDouble(seconds, 5) << std::endl;
 
                         delete g;
                     }
@@ -262,7 +266,7 @@ int main(int argc, const char* argv[])
                     const int N = 10;
                     uint64_t numCliques = 0;
                     uint64_t numCalls = 0;
-                    uint64_t numNonEmptyPivots = 0;
+                    uint64_t numBranches = 0;
                     double numSeconds = 0.0;
                     for (int k = 0; k < N; k++)
                     {
@@ -279,7 +283,7 @@ int main(int argc, const char* argv[])
 
                         numCliques += cr.cliqueCount();
                         numCalls += cr.recursionCount();
-                        numNonEmptyPivots += cr.nonEmptyPivotSetCount();
+                        numBranches += cr.branchCount();
                         numSeconds += seconds;
 
                         delete g;
@@ -287,7 +291,7 @@ int main(int argc, const char* argv[])
 
                     uint64_t avgCliques = numCliques / N;
                     uint64_t avgCalls = numCalls / N;
-                    uint64_t avgNonEmptyPivots = numNonEmptyPivots / N;
+                    uint64_t avgNonEmptyPivots = numBranches / N;
                     double avgSeconds = numSeconds / N;
                     std::cout << cm.handle << ", " << "Gnp(n=" << SyntheticBenchmarks[t].n << "; p=" << formatDouble(SyntheticBenchmarks[t].p, 3) << "), " << avgCliques << ", " << avgCalls << ", " << avgNonEmptyPivots << ", " << formatDouble(avgSeconds, 5) << std::endl;
                 }

@@ -181,10 +181,11 @@ namespace kn
             IntegerSet* Q;
             if ((!P->isEmpty()) && (nullptr != (Q = pivotConflict(S, P, X))))
             {
+                std::size_t callCount = 0;
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 bool grouped = (Q->countLimit(2) > 1);
                 if (grouped) receiver->onOpenGroup();
-                bool first = true;
                 Graph::Vertex vertex;
 #endif
 
@@ -194,8 +195,7 @@ namespace kn
                     std::size_t v = it.next();
                     P->remove(v);
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
-                    if (!first) receiver->onPartition();
-                    first = false;
+                    if (callCount > 0) receiver->onPartition();
                     graph->getVertexByIndex(v, vertex);
                     receiver->onVertex(v, vertex.attrID);
 #endif
@@ -205,6 +205,7 @@ namespace kn
                     IntegerSet* x2 = this->intersect(X, &N[v]);
 
                     apply(s2, p2, x2);
+                    callCount++;
 
                     releaseSet(); // Release X
                     releaseSet(); // Release P
@@ -213,8 +214,10 @@ namespace kn
                     X->add(v);
                 }
 
+                if (callCount > 1) receiver->branchCounter += (callCount - 1);
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
-                if (first) receiver->onCutOff();
+                if (callCount == 0) receiver->onCutOff();
                 if (grouped) receiver->onCloseGroup();
 #endif
                 this->releaseSet(); // Release Q
@@ -267,11 +270,11 @@ namespace kn
                 IntegerSet* Q = pivotConflict(S, P, X);
                 if (Q)
                 {
-                    bool first = true;
+                    std::size_t callCount = 0;
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                     bool grouped = (Q->countLimit(2) > 1);
                     if (grouped) receiver->onOpenGroup();
-                    bool first = true;
                     Graph::Vertex vertex;
 #endif
 
@@ -280,10 +283,9 @@ namespace kn
                     {
                         std::size_t v = it.next();
                         P->remove(v);
-                        first = false;
+
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
-                        if (!first) receiver->onPartition();
-                        first = false;
+                        if (callCount > 0) receiver->onPartition();
                         graph->getVertexByIndex(v, vertex);
                         receiver->onVertex(v, vertex.attrID);
 #endif
@@ -301,10 +303,11 @@ namespace kn
 
                         X->add(v);
                     }
-                    if (!first) receiver->nonEmptyPivotSetCounter++;
+
+                    if (callCount > 1) receiver->branchCounter += (callCount - 1);
 
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
-                    if (first) receiver->onCutOff();
+                    if (callCount == 0) receiver->onCutOff();
                     if (grouped) receiver->onCloseGroup();
 #endif
                     this->releaseSet(); // Release Q

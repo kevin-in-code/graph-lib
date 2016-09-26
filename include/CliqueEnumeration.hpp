@@ -27,7 +27,7 @@ namespace kn
         friend class BKSearch;
         uint64_t cliqueCounter = 0;
         uint64_t recursionCounter = 0;
-        uint64_t nonEmptyPivotSetCounter = 0;
+        uint64_t branchCounter = 0;
         uint64_t cutOffCounter = 0;
 
     public:
@@ -35,13 +35,13 @@ namespace kn
         {
             cliqueCounter = 0;
             recursionCounter = 0;
-            nonEmptyPivotSetCounter = 0;
+            branchCounter = 0;
             cutOffCounter = 0;
         }
 
         uint64_t cliqueCount() { return cliqueCounter; }
         uint64_t recursionCount() { return recursionCounter; }
-        uint64_t nonEmptyPivotSetCount() { return nonEmptyPivotSetCounter; }
+        uint64_t branchCount() { return branchCounter; }
         uint64_t cutOffCount() { return cutOffCounter; }
 
         virtual void onClear() {}
