@@ -203,6 +203,10 @@ namespace kn
 
                     apply(s2, p2, x2);
 
+                    releaseSet(); // Release X
+                    releaseSet(); // Release P
+                    releaseSet(); // Release S
+
                     X->add(v);
                 }
 
@@ -230,10 +234,6 @@ namespace kn
                 receiver->onCutOff();
 #endif
             }
-
-            this->releaseSet(); // Release X
-            this->releaseSet(); // Release P
-            this->releaseSet(); // Release S
         }
 
         void apply2(IntegerSet* S, IntegerSet* P, IntegerSet* X)
