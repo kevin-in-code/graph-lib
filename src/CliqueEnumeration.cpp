@@ -175,8 +175,8 @@ namespace kn
         void apply(IntegerSet* S, IntegerSet* P, IntegerSet* X)
         {
             receiver->recursionCounter++;
-            IntegerSet* Q = pivotConflict(S, P, X);
-            if (Q)
+            IntegerSet* Q;
+            if ((!P->isEmpty()) && (nullptr != (Q = pivotConflict(S, P, X))))
             {
 #if !defined(NDEBUG) && defined(ENABLE_PRETTY_PRINT)
                 bool grouped = (Q->countLimit(2) > 1);
